@@ -1,6 +1,7 @@
 import mujoco
 import mujoco.viewer
 import time
+import numpy as np
 
 model = mujoco.MjModel.from_xml_path(r"Turtlebot3\scene_turtlebot3_waffle_pi.xml")
 data = mujoco.MjData(model)
@@ -14,7 +15,7 @@ def ddr_ik(v, omega, r=WHEEL_RADIUS, l=WHEEL_BASE):
     """
     omega_L = (2 * v - l * omega) / (2 * r)
     omega_R = (2 * v + l * omega) / (2 * r)
-    return omega_L, omega_R
+    return np.clip(omega_L,-7.88, 7.88), np.clip(omega_R,-7.88, 7.88) #clip based on MJCF
 
 with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.readthedocs.io/en/stable/python.html
     start = time.time()
@@ -26,10 +27,10 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
         # a policy and applies a control signal before stepping the physics.
         if step_start - start > INTERVAL:
             if INTERVAL % 2:
-                data.ctrl[0], data.ctrl[1] = ddr_ik(0.15, 0.9)
+                data.ctrl[0], data.ctrl[1] = ddr_ik(0, 1.82)
             else:
-                data.ctrl[0], data.ctrl[1] = ddr_ik(0.15, -0.9)
-            INTERVAL += 3
+                data.ctrl[0], data.ctrl[1] = ddr_ik(0, -1.82)
+            INTERVAL += 1
         mujoco.mj_step(model, data)
 
         # Pick up changes to the physics state, apply perturbations, update options from GUI.
