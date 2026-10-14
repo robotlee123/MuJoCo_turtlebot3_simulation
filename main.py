@@ -41,6 +41,7 @@ renderer = mujoco.Renderer(model, height=480, width=640)
 camera_id = mujoco.mj_name2id(
     model, mujoco.mjtObj.mjOBJ_CAMERA, "camera_0"
 )
+camera_rate, camera_cnt = 30, 0
 
 # Create LiDAR
 lidar_sim_rate = 10
@@ -69,7 +70,7 @@ encoder_cnt = 0
 left_enc = 0.0      
 right_enc = 0.0
 
-with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.readthedocs.io/en/stable/python.html
+with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.readthedocs.io/en/stable/python.html & https://github.com/discoverse-dev/MuJoCo-LiDAR/blob/main/examples/example_mjcf.py
     start = time.time()
     print(data.body('base').xpos)
     INTERVAL = 0
@@ -94,17 +95,13 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
             left_enc = calculate_encoder_rads(data.sensor('left_wheel_encoder').data[0])
             right_enc = calculate_encoder_rads(data.sensor('right_wheel_encoder').data[0])
             print("Total displacement", calculate_robot_displacement_from_wheel_travel(left_enc,right_enc))
-
             encoder_cnt += 1
 
-        renderer.update_scene(data, camera=camera_id)
-        rgb_image = renderer.render()
-
-        bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
-
-        cv2.imshow("MuJoCo Camera Feed", bgr_image)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+        if data.time * camera_rate > camera_cnt:
+            renderer.update_scene(data, camera=camera_id)
+            cv2.imshow("MuJoCo Camera Feed", cv2.cvtColor(renderer.render(), cv2.COLOR_RGB2BGR))
+            cv2.waitKey(1)
+            camera_cnt += 1
 
         viewer.sync()
 
