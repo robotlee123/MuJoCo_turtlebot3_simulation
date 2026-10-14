@@ -12,6 +12,7 @@ data = mujoco.MjData(model)
 
 WHEEL_RADIUS = 0.033 # radius of wheel in m
 WHEEL_BASE = 0.288 # distance between wheel in m
+TICKS_PER_REV = 1024 #encoder ticks per revolution
 
 def ddr_ik(v, omega, r=WHEEL_RADIUS, l=WHEEL_BASE):
     """Differential drive inverse kinematics: calculate wheels speeds from desired velocity.
@@ -21,11 +22,24 @@ def ddr_ik(v, omega, r=WHEEL_RADIUS, l=WHEEL_BASE):
     omega_R = (2 * v + l * omega) / (2 * r)
     return np.clip(omega_L,-7.88, 7.88), np.clip(omega_R,-7.88, 7.88) #clip based on MJCF
 
+def calculate_encoder_rads(rads, ticks_per_rev = TICKS_PER_REV):
+    """it first find the number of ticks via the radians, 
+        quantizes it, then find the radians using the quantized ticks
+    """
+    tick_size = 2 * np.pi / TICKS_PER_REV
+    return np.round(rads / tick_size) * tick_size
+    # return (np.round(rads / 2 * np.pi) * ticks_per_rev) * ((2 * np.pi) / ticks_per_rev)
+def calculate_wheel_travel(rads,wheel_rad=WHEEL_RADIUS):
+    return rads * wheel_rad
+def calculate_robot_displacement_from_wheel_travel(left_wheel_rad,right_wheel_rad, l=WHEEL_BASE):
+    displacement=(calculate_wheel_travel(left_wheel_rad) + calculate_wheel_travel(right_wheel_rad))/2
+    theta=(-calculate_wheel_travel(left_wheel_rad) + calculate_wheel_travel(right_wheel_rad))/l
+    return displacement, theta
 # Create LiDAR
-
 lidar_sim_rate = 10
 lidar_sim_cnt = 0
-exclude_body_id = model.body("lidar_base").id #so the ray does not intersect the LiDAR model, ref https://github.com/hansolo12334/MuJoCo-LiDAR-cpp
+
+exclude_body_id = model.body("lidar_base").id #so the ray does not intersect the LiDAR model
 lidar_sensor = MjLidarWrapper(
     model,
     site_name="lidar_site",
@@ -33,7 +47,7 @@ lidar_sensor = MjLidarWrapper(
     cutoff_dist=50.0,
     args={
         'max_candidates': 64,
-        'ti_init_args': {'device_memory_GB': 4},
+        'ti_init_args': {'device_memory_GB': 8},
         'bodyexclude': exclude_body_id
     }
 )
@@ -41,35 +55,48 @@ lidar_sensor = MjLidarWrapper(
 # Generate scan pattern
 rays_theta, rays_phi = scan_gen.create_lidar_single_line()
 
+# Endcoder variables
+encoder_sim_rate = 50   # Hz
+encoder_cnt = 0
+
+left_enc = 0.0      
+right_enc = 0.0
+
 with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.readthedocs.io/en/stable/python.html
     start = time.time()
+    print(data.body('base').xpos)
     INTERVAL = 0
-    while viewer.is_running() and time.time() - start < 30:
+    while viewer.is_running() and time.time() - start < 10:
         step_start = time.time()
-
-        # mj_step can be replaced with code that also evaluates
-        # a policy and applies a control signal before stepping the physics.
-        if step_start - start > INTERVAL:
-            if INTERVAL % 2:
-                data.ctrl[0], data.ctrl[1] = ddr_ik(0, 1.82)
-            else:
-                data.ctrl[0], data.ctrl[1] = ddr_ik(0, -1.82)
-            INTERVAL += 1
+    
+        # if step_start - start > INTERVAL:
+        #     if INTERVAL % 2:
+        #         data.ctrl[0], data.ctrl[1] = ddr_ik(0.2, 1.82)
+        #     else:
+        #         data.ctrl[0], data.ctrl[1] = ddr_ik(0.2, -1.82)
+        #     INTERVAL += 1
+        data.ctrl[0], data.ctrl[1] = ddr_ik(0.22,0.0)
         mujoco.mj_step(model, data)
-
         
         if data.time * lidar_sim_rate > lidar_sim_cnt:
             lidar_sensor.trace_rays(data, rays_theta, rays_phi)
             points = lidar_sensor.get_hit_points()
-            
             lidar_sim_cnt += 1
 
-        # Pick up changes to the physics state, apply perturbations, update options from GUI.
+        if data.time * encoder_sim_rate > encoder_cnt:
+            left_enc = calculate_encoder_rads(data.sensor('left_wheel_encoder').data[0])
+            right_enc = calculate_encoder_rads(data.sensor('right_wheel_encoder').data[0])
+            print("Total displacement", calculate_robot_displacement_from_wheel_travel(left_enc,right_enc))
+
+            encoder_cnt += 1
         viewer.sync()
 
         # Rudimentary time keeping, will drift relative to wall clock.
+        # Makes the sim run in realtime by delaying if the step is faster 
+        # than model.opt.timestep (timestep)
         time_until_next_step = model.opt.timestep - (time.time() - step_start)
         if time_until_next_step > 0:
             time.sleep(time_until_next_step)
-    plt.scatter(points[:,0], points[:,1])
-    plt.show()
+    print(data.body('base').xpos)
+    # plt.scatter(points[:,0], points[:,1])
+    # plt.show()

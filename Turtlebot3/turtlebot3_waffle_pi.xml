@@ -69,6 +69,11 @@
     <velocity class="wheel_right" name="wheel_right" joint="wheel_right"/>
   </actuator>
 
+  <sensor>
+    <jointpos name="left_wheel_encoder" joint="wheel_left"/>
+    <jointpos name="right_wheel_encoder" joint="wheel_right"/>
+  </sensor>
+
   <contact>
     <exclude body1="base" body2="wheel_left"/>
     <exclude body1="base" body2="wheel_right"/>
