@@ -30,12 +30,6 @@ def calculate_encoder_rads(rads, ticks_per_rev = TICKS_PER_REV):
     """
     tick_size = 2 * np.pi / ticks_per_rev
     return np.round(rads / tick_size) * tick_size
-def calculate_wheel_travel(rads,wheel_rad=WHEEL_RADIUS):
-    return rads * wheel_rad
-def calculate_robot_displacement_from_wheel_travel(left_wheel_rad,right_wheel_rad, l=WHEEL_BASE):
-    displacement=(calculate_wheel_travel(left_wheel_rad) + calculate_wheel_travel(right_wheel_rad))/2
-    theta=(-calculate_wheel_travel(left_wheel_rad) + calculate_wheel_travel(right_wheel_rad))/l
-    return displacement, theta
 
 renderer = mujoco.Renderer(model, height=480, width=640)
 camera_id = mujoco.mj_name2id(
@@ -70,6 +64,9 @@ encoder_cnt = 0
 left_enc = 0.0      
 right_enc = 0.0
 
+x, y, th = 0.0, 0.0, 0.0
+prev_l, prev_r = 0.0, 0.0
+
 with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.readthedocs.io/en/stable/python.html & https://github.com/discoverse-dev/MuJoCo-LiDAR/blob/main/examples/example_mjcf.py
     start = time.time()
     print(data.body('base').xpos)
@@ -77,13 +74,12 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
     while viewer.is_running() and time.time() - start < 10:
         step_start = time.time()
     
-        # if step_start - start > INTERVAL:
-        #     if INTERVAL % 2:
-        #         data.ctrl[0], data.ctrl[1] = ddr_ik(0.2, 1.82)
-        #     else:
-        #         data.ctrl[0], data.ctrl[1] = ddr_ik(0.2, -1.82)
-        #     INTERVAL += 1
-        data.ctrl[0], data.ctrl[1] = ddr_ik(0.22,0.0)
+        if step_start - start > INTERVAL:
+            if INTERVAL % 2:
+                data.ctrl[0], data.ctrl[1] = ddr_ik(0.2, 1.82)
+            else:
+                data.ctrl[0], data.ctrl[1] = ddr_ik(0.2, -1.82)
+            INTERVAL += 1
         mujoco.mj_step(model, data)
         
         if data.time * lidar_sim_rate > lidar_sim_cnt:
@@ -94,7 +90,16 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
         if data.time * encoder_sim_rate > encoder_cnt:
             left_enc = calculate_encoder_rads(data.sensor('left_wheel_encoder').data[0])
             right_enc = calculate_encoder_rads(data.sensor('right_wheel_encoder').data[0])
-            print("Total displacement", calculate_robot_displacement_from_wheel_travel(left_enc,right_enc))
+            #integration of wheel encoder to find the x,y,th
+            dl = (left_enc - prev_l) * WHEEL_RADIUS
+            dr = (right_enc - prev_r) * WHEEL_RADIUS
+            prev_l, prev_r = left_enc, right_enc
+            ds, dth = (dl + dr) / 2, (dr - dl) / WHEEL_BASE
+            x  += ds * np.cos(th + dth / 2)
+            y  += ds * np.sin(th + dth / 2)
+            th += dth
+
+            print("Total displacement", x,y,th)
             encoder_cnt += 1
 
         if data.time * camera_rate > camera_cnt:
