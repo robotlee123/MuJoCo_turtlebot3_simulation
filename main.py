@@ -1,6 +1,8 @@
 import mujoco
 import mujoco.viewer
 
+import cv2
+
 from mujoco_lidar import MjLidarWrapper, scan_gen #external lidar library
 
 import time
@@ -26,15 +28,20 @@ def calculate_encoder_rads(rads, ticks_per_rev = TICKS_PER_REV):
     """it first find the number of ticks via the radians, 
         quantizes it, then find the radians using the quantized ticks
     """
-    tick_size = 2 * np.pi / TICKS_PER_REV
+    tick_size = 2 * np.pi / ticks_per_rev
     return np.round(rads / tick_size) * tick_size
-    # return (np.round(rads / 2 * np.pi) * ticks_per_rev) * ((2 * np.pi) / ticks_per_rev)
 def calculate_wheel_travel(rads,wheel_rad=WHEEL_RADIUS):
     return rads * wheel_rad
 def calculate_robot_displacement_from_wheel_travel(left_wheel_rad,right_wheel_rad, l=WHEEL_BASE):
     displacement=(calculate_wheel_travel(left_wheel_rad) + calculate_wheel_travel(right_wheel_rad))/2
     theta=(-calculate_wheel_travel(left_wheel_rad) + calculate_wheel_travel(right_wheel_rad))/l
     return displacement, theta
+
+renderer = mujoco.Renderer(model, height=480, width=640)
+camera_id = mujoco.mj_name2id(
+    model, mujoco.mjtObj.mjOBJ_CAMERA, "camera_0"
+)
+
 # Create LiDAR
 lidar_sim_rate = 10
 lidar_sim_cnt = 0
@@ -89,6 +96,16 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
             print("Total displacement", calculate_robot_displacement_from_wheel_travel(left_enc,right_enc))
 
             encoder_cnt += 1
+
+        renderer.update_scene(data, camera=camera_id)
+        rgb_image = renderer.render()
+
+        bgr_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2BGR)
+
+        cv2.imshow("MuJoCo Camera Feed", bgr_image)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+
         viewer.sync()
 
         # Rudimentary time keeping, will drift relative to wall clock.
