@@ -1,0 +1,2 @@
+draw point function was made by claude so that we could se the lidar points.
+I asked Claude to use rate for viewer, camera, encoder based on the mujoco-lidar rate example. this is done because the simulation is slowed down otherwise.
