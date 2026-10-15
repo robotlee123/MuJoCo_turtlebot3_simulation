@@ -75,8 +75,8 @@
   </actuator>
 
   <sensor>
-    <jointpos name="left_wheel_encoder" joint="wheel_left"/>
-    <jointpos name="right_wheel_encoder" joint="wheel_right"/>
+    <jointpos name="left_wheel_encoder" joint="wheel_left" noise="0.001"/>
+    <jointpos name="right_wheel_encoder" joint="wheel_right" noise="0.001"/>
   </sensor>
 
   <contact>

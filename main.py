@@ -22,7 +22,8 @@ def ddr_ik(v, omega, r=WHEEL_RADIUS, l=WHEEL_BASE):
     """
     omega_L = (2 * v - l * omega) / (2 * r)
     omega_R = (2 * v + l * omega) / (2 * r)
-    return np.clip(omega_L,-7.88, 7.88), np.clip(omega_R,-7.88, 7.88) #clip based on MJCF
+    s = max(1.0, abs(omega_L)/7.88, abs(omega_R)/7.88)
+    return omega_L/s, omega_R/s #clip based on MJCF
 
 def calculate_encoder_rads(rads, ticks_per_rev = TICKS_PER_REV):
     """it first find the number of ticks via the radians, 
@@ -31,11 +32,13 @@ def calculate_encoder_rads(rads, ticks_per_rev = TICKS_PER_REV):
     tick_size = 2 * np.pi / ticks_per_rev
     return np.round(rads / tick_size) * tick_size
 
+#camera setup
 renderer = mujoco.Renderer(model, height=480, width=640)
 camera_id = mujoco.mj_name2id(
     model, mujoco.mjtObj.mjOBJ_CAMERA, "camera_0"
 )
-camera_rate, camera_cnt = 30, 0
+camera_rate = 30
+camera_cnt =  0
 
 # Create LiDAR
 lidar_sim_rate = 10
@@ -58,23 +61,26 @@ lidar_sensor = MjLidarWrapper(
 rays_theta, rays_phi = scan_gen.create_lidar_single_line()
 
 # Endcoder variables
-encoder_sim_rate = 50   # Hz
+encoder_rate = 50   # Hz
 encoder_cnt = 0
 
 left_enc = 0.0      
 right_enc = 0.0
 
+#Odometry cariables
 x, y, th = 0.0, 0.0, 0.0
 prev_l, prev_r = 0.0, 0.0
 
+viewer_rate = 30
+viewer_cnt = 0
 with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.readthedocs.io/en/stable/python.html & https://github.com/discoverse-dev/MuJoCo-LiDAR/blob/main/examples/example_mjcf.py
     start = time.time()
     print(data.body('base').xpos)
     INTERVAL = 0
-    while viewer.is_running() and time.time() - start < 10:
+    while viewer.is_running() and data.time < 30: #timing based on simulation time
         step_start = time.time()
     
-        if step_start - start > INTERVAL:
+        if data.time > INTERVAL: #timing based on simulation time
             if INTERVAL % 2:
                 data.ctrl[0], data.ctrl[1] = ddr_ik(0.2, 1.82)
             else:
@@ -87,7 +93,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
             points = lidar_sensor.get_hit_points()
             lidar_sim_cnt += 1
 
-        if data.time * encoder_sim_rate > encoder_cnt:
+        if data.time * encoder_rate > encoder_cnt:
             left_enc = calculate_encoder_rads(data.sensor('left_wheel_encoder').data[0])
             right_enc = calculate_encoder_rads(data.sensor('right_wheel_encoder').data[0])
             #integration of wheel encoder to find the x,y,th
@@ -98,8 +104,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
             x  += ds * np.cos(th + dth / 2)
             y  += ds * np.sin(th + dth / 2)
             th += dth
-
-            print("Total displacement", x,y,th)
+            print("State:", x,y,th)
             encoder_cnt += 1
 
         if data.time * camera_rate > camera_cnt:
@@ -107,8 +112,10 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
             cv2.imshow("MuJoCo Camera Feed", cv2.cvtColor(renderer.render(), cv2.COLOR_RGB2BGR))
             cv2.waitKey(1)
             camera_cnt += 1
-
-        viewer.sync()
+        
+        if data.time * viewer_rate > viewer_cnt:
+            viewer.sync()
+            viewer_cnt += 1
 
         # Rudimentary time keeping, will drift relative to wall clock.
         # Makes the sim run in realtime by delaying if the step is faster 
@@ -116,6 +123,8 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
         time_until_next_step = model.opt.timestep - (time.time() - step_start)
         if time_until_next_step > 0:
             time.sleep(time_until_next_step)
+    cv2.destroyAllWindows()
+    renderer.close()
     print(data.body('base').xpos)
-    # plt.scatter(points[:,0], points[:,1])
-    # plt.show()
+    plt.scatter(points[:,0], points[:,1])
+    plt.show()
