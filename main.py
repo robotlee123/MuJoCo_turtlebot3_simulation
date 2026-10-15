@@ -16,6 +16,21 @@ WHEEL_RADIUS = 0.033 # radius of wheel in m
 WHEEL_BASE = 0.288 # distance between wheel in m
 TICKS_PER_REV = 1024 #encoder ticks per revolution
 
+def draw_points(viewer, pts, rgba=(1, 0, 0, 1), size=0.01):
+    """Claude made this visualisation"""
+    scn = viewer.user_scn
+    n = min(len(pts), scn.maxgeom)
+    for i in range(n):
+        mujoco.mjv_initGeom(
+            scn.geoms[i],
+            mujoco.mjtGeom.mjGEOM_SPHERE,
+            np.array([size, 0, 0]),
+            np.asarray(pts[i], dtype=np.float64),
+            np.eye(3).flatten(),
+            np.array(rgba, dtype=np.float32),
+        )
+    scn.ngeom = n
+
 def ddr_ik(v, omega, r=WHEEL_RADIUS, l=WHEEL_BASE):
     """Differential drive inverse kinematics: calculate wheels speeds from desired velocity.
         reference: https://www.roboticsbook.org/S52_diffdrive_actions.html
@@ -56,7 +71,7 @@ lidar_sensor = MjLidarWrapper(
         'bodyexclude': exclude_body_id
     }
 )
-
+site_id = model.site("lidar_site").id
 # Generate scan pattern
 rays_theta, rays_phi = scan_gen.create_lidar_single_line()
 
@@ -79,23 +94,40 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
     INTERVAL = 0
     while viewer.is_running() and data.time < 30: #timing based on simulation time
         step_start = time.time()
-    
+        
+        mujoco.mj_step(model, data)
+        
         if data.time > INTERVAL: #timing based on simulation time
             if INTERVAL % 2:
                 data.ctrl[0], data.ctrl[1] = ddr_ik(0.2, 1.82)
             else:
                 data.ctrl[0], data.ctrl[1] = ddr_ik(0.2, -1.82)
             INTERVAL += 1
-        mujoco.mj_step(model, data)
         
         if data.time * lidar_sim_rate > lidar_sim_cnt:
             lidar_sensor.trace_rays(data, rays_theta, rays_phi)
             points = lidar_sensor.get_hit_points()
+
+            # Drop misses (NaN/inf or at max range)
+            valid = np.isfinite(points).all(axis=1) & (np.linalg.norm(points, axis=1) < 49.9)
+            pts = points[valid]
+
+            # If get_hit_points() is in the sensor frame, convert to world frame:
+            R = data.site_xmat[site_id].reshape(3, 3)
+            p = data.site_xpos[site_id]
+            pts_world = pts @ R.T + p
+
+            with viewer.lock():
+                draw_points(viewer, pts_world)
+
             lidar_sim_cnt += 1
 
         if data.time * encoder_rate > encoder_cnt:
+            gt = data.body('base').xpos #ground truth
+
             left_enc = calculate_encoder_rads(data.sensor('left_wheel_encoder').data[0])
             right_enc = calculate_encoder_rads(data.sensor('right_wheel_encoder').data[0])
+
             #integration of wheel encoder to find the x,y,th
             dl = (left_enc - prev_l) * WHEEL_RADIUS
             dr = (right_enc - prev_r) * WHEEL_RADIUS
@@ -104,7 +136,7 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
             x  += ds * np.cos(th + dth / 2)
             y  += ds * np.sin(th + dth / 2)
             th += dth
-            print("State:", x,y,th)
+            print(f"odom=({x:.3f},{y:.3f},{th:.3f}) gt=({gt[0]:.3f},{gt[1]:.3f})")
             encoder_cnt += 1
 
         if data.time * camera_rate > camera_cnt:
@@ -125,6 +157,5 @@ with mujoco.viewer.launch_passive(model, data) as viewer: # ref: https://mujoco.
             time.sleep(time_until_next_step)
     cv2.destroyAllWindows()
     renderer.close()
-    print(data.body('base').xpos)
     plt.scatter(points[:,0], points[:,1])
     plt.show()
