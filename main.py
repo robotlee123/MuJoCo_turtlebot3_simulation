@@ -23,11 +23,8 @@ def main():
     logger = GroundTruthLogger(data)
 
     error_model = ErrorModel(model, 0.26)
-    error_model.calculate_error_model()
-    error_model.check_ctrl_and_obsv_matrix()
 
     controller = LQIController(model, error_model.Ad, error_model.Bd)
-    controller.calculate_gain()
 
     # Known start pose is an initial condition, not feedback.
     x0, y0, th0 = logger.true()

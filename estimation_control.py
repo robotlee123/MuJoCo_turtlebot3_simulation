@@ -34,6 +34,47 @@ class ZigZagController:
         omega = -1.82 if int(t) % 2 == 0 else 1.82
         return 0.2, omega  # (v, omega)
 
+class EKF_Estimator:
+    def __init__(self, model):
+        self.T = model.opt.timestep
+
+        self.Q_D = np.diag([(0.02*0.1)**2, (0.02*0.1)**2, np.deg2rad(4.5)**2])
+        self.R_N = np.array([[0.08**2]])
+
+    def f_uni(self, x, u):
+        # Predict the pose one sample ahead from the commanded (v, omega).
+        v, w = u
+        x, y, th = x
+        if abs(w) < 1e-6:                       # straight-line limit
+            return np.array([x + v * self.T * np.cos(th),
+                                y + v * self.T * np.sin(th),
+                                wrap(th)])
+        th_n = th + w * self.T
+        return np.array([x + v / w * (np.sin(th_n) - np.sin(th)),
+                            y + v / w * (-np.cos(th_n) + np.cos(th)),
+                            wrap(th_n)])
+
+    def F_uni(self, x, u):
+        # Jacobian of f_uni with respect to the state, evaluated at (x, u). 3x3.
+        v, w = u
+        th = x[2]
+        F = np.eye(3)
+        if abs(w) < 1e-6:
+            F[0, 2] = -v * self.T * np.sin(th)
+            F[1, 2] =  v * self.T * np.cos(th)
+        else:
+            th_n = th + w * self.T
+            F[0, 2] = v / w * (np.cos(th_n) - np.cos(th))
+            F[1, 2] = v / w * (np.sin(th_n) - np.sin(th))
+        return F
+    
+    def h_aruco(x, marker):
+        pass
+
+    def H_aruco(x, marker):
+        pass
+
+
 class LQIController:
     def __init__(self, model, Ad, Bd):
         self.T = model.opt.timestep
@@ -42,7 +83,7 @@ class LQIController:
         self.Bd = Bd
 
         self.z = 0.0
-        self.K = np.zeros((3,3))
+        self.calculate_gain()
 
     def reset(self):
         self.z = 0.0
@@ -52,11 +93,12 @@ class LQIController:
         Ad_i = np.block([[self.Ad,    np.zeros((n, 1))],
                     [self.T, 0,   np.ones((1, 1))]])
         Bd_i = np.vstack([self.Bd, np.zeros((1, 1))])
-        
-        Qa = np.diag([1/0.2**2, 1/np.deg2rad(15)**2, 100.0]) 
-        Ra = np.array([[1/0.1**2]])
+
+        Qa = np.diag([1/0.2**2, 1/np.deg2rad(15)**2, 100.0]) # CHANGE THIS BRO
+        Ra = np.array([[1/0.1**2]])                          # AND THIS!!!!!!!!!!!!!!!
         self.K, _, Ea = ct.dlqr(Ad_i, Bd_i, Qa, Ra)
         print("closed-loop poles :", np.abs(Ea))
+        print("gain: ", self.K)
 
     def step(self, e_y, e_theta, kappa, v):
         # 1. Command from the augmented state [e_y, e_theta, z], plus feedforward
@@ -79,9 +121,8 @@ class ErrorModel:
         self.Ts = self.model.opt.timestep
         self.kappa = 0.0
 
-        self.Ad = np.zeros((2,2))
-        self.Bd = np.zeros((2,1))
-        self.C = np.zeros((2,2))
+        self.calculate_error_model()
+        self.check_ctrl_and_obsv_matrix()
 
     def calculate_error_model(self):
         # Discrete linearised path-following error model.
