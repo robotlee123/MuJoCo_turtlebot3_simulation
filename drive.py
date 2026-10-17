@@ -29,7 +29,9 @@ def quantize_rads(rads, ticks_per_rev=cfg.TICKS_PER_REV):
 
 
 def ddr_ik(v, omega, max_w, r=cfg.WHEEL_RADIUS, l=cfg.WHEEL_BASE):
-    """Differential-drive inverse kinematics: (v, omega) -> (omega_L, omega_R).
+    """
+    Differential drive inverse kinematics: calculate wheels speeds from desired velocity.
+    reference: https://www.roboticsbook.org/S52_diffdrive_actions.html
     If either wheel exceeds max_w, both are scaled so the turn ratio is kept."""
     wl = (2 * v - l * omega) / (2 * r)
     wr = (2 * v + l * omega) / (2 * r)

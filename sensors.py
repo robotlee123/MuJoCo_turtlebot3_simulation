@@ -33,7 +33,7 @@ class Lidar:
             args={
                 "max_candidates": 64,
                 "ti_init_args": {"device_memory_GB": 8},
-                "bodyexclude": model.body(cfg.LIDAR_BODY).id,  # don't hit own body
+                "bodyexclude": model.body(cfg.LIDAR_BODY).id,  # don't hit lidar housing
             },
         )
         self.theta, self.phi = scan_gen.create_lidar_single_line()

@@ -6,7 +6,7 @@ import numpy as np
 import config as cfg
 from drive import Drive, RateTimer
 from sensors import Encoders, Lidar, Camera
-from estimation_control import DiffDriveOdometry, ScriptedController, GroundTruthLogger
+from estimation_control import DiffDriveOdometry, ZigZagController, GroundTruthLogger, ErrorModel, LQIController
 
 
 def main():
@@ -19,8 +19,15 @@ def main():
     encoders = Encoders(data)
     lidar = Lidar(model, data)
     camera = Camera(model, data)
-    controller = ScriptedController()
+    controller_temp = ZigZagController()
     logger = GroundTruthLogger(data)
+
+    error_model = ErrorModel(model, 0.26)
+    error_model.calculate_error_model()
+    error_model.check_ctrl_and_obsv_matrix()
+
+    controller = LQIController(model, error_model.Ad, error_model.Bd)
+    controller.calculate_gain()
 
     # Known start pose is an initial condition, not feedback.
     x0, y0, th0 = logger.true()
@@ -38,7 +45,7 @@ def main():
             step_start = time.time()
 
             # 1. command (later: LQR using the EKF estimate)
-            v, omega = controller.command(data.time)
+            v, omega = controller_temp.command(data.time)
             drive.apply(v, omega)
 
             # 2. physics
