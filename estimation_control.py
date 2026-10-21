@@ -11,12 +11,13 @@ class DiffDriveOdometry:
     def __init__(self, left0, right0, x=0.0, y=0.0, th=0.0):
         self.prev_l, self.prev_r = left0, right0
         self.x, self.y, self.th = x, y, th
+        self.dl, self.dr = 0.0, 0.0
 
     def update(self, left, right):
-        dl = (left - self.prev_l) * cfg.WHEEL_RADIUS
-        dr = (right - self.prev_r) * cfg.WHEEL_RADIUS
+        self.dl = (left - self.prev_l) * cfg.WHEEL_RADIUS
+        self.dr = (right - self.prev_r) * cfg.WHEEL_RADIUS
         self.prev_l, self.prev_r = left, right
-        ds, dth = (dl + dr) / 2, (dr - dl) / cfg.WHEEL_BASE
+        ds, dth = (self.dl + self.dr) / 2, (self.dr - self.dl) / cfg.WHEEL_BASE
         self.x += ds * np.cos(self.th + dth / 2)
         self.y += ds * np.sin(self.th + dth / 2)
         self.th = wrap(self.th + dth)
@@ -41,9 +42,9 @@ class EKF_Estimator:
         self.Q_D = np.diag([(0.02*0.1)**2, (0.02*0.1)**2, np.deg2rad(4.5)**2])
         self.R_N = np.array([[0.08**2]])
 
-    def f_uni(self, x, u):
-        # Predict the pose one sample ahead from the commanded (v, omega).
-        v, w = u
+    def f_uni(self, x, dl, dr):
+        v = (dl + dr) / (2 * self.T)
+        w = (dl + dr) / (cfg.WHEEL_BASE * self.T)
         x, y, th = x
         if abs(w) < 1e-6:                       # straight-line limit
             return np.array([x + v * self.T * np.cos(th),
@@ -54,9 +55,10 @@ class EKF_Estimator:
                             y + v / w * (-np.cos(th_n) + np.cos(th)),
                             wrap(th_n)])
 
-    def F_uni(self, x, u):
+    def F_uni(self, x, dl, dr):
         # Jacobian of f_uni with respect to the state, evaluated at (x, u). 3x3.
-        v, w = u
+        v = (dl + dr) / (2 * self.T)
+        w = (dl + dr) / (cfg.WHEEL_BASE * self.T)
         th = x[2]
         F = np.eye(3)
         if abs(w) < 1e-6:
@@ -68,12 +70,34 @@ class EKF_Estimator:
             F[1, 2] = v / w * (np.sin(th_n) - np.sin(th))
         return F
     
-    def h_aruco(x, marker):
-        pass
+    def h_aruco(self, x, marker):
+        '''Range and bearing from pose xh to marker mk.'''
+        dx, dy = marker[0] - x[0], marker[1] -  x[1]
+        return np.array([np.hypot(dx, dy), wrap(np.arctan2(dy, dx) - x[2])])
 
-    def H_aruco(x, marker):
-        pass
-
+    def H_aruco(self, x, marker):
+        '''Jacobian H_t = dh/dx, evaluated at the predicted estimate.'''
+        dx, dy = marker[0] - x[0], marker[1] - x[1]
+        q = dx**2 + dy**2
+        r = np.sqrt(q)
+        return np.array([[-dx / r, -dy / r,  0.0],
+                        [ dy / q, -dx / q, -1.0]])
+    
+    def ekf_predict(self, xh, P, dl, dr):
+        xh_pred = self.f_uni(xh, dl, dr)              # nonlinear f propagates the state
+        F = self.F_uni(xh, dl, dr)                    # Jacobian propagates the covariance
+        P_pred = F @ P @ F.T + self.Q_D
+        return xh_pred, P_pred
+    
+    def ekf_update(self, xh_pred, P_pred, y):
+        y_hat = self.h_aruco(xh_pred)            # nonlinear h gives the expected measurement
+        H = self.H_aruco(xh_pred)
+        S = H @ P_pred @ H.T + self.R_N          # innovation covariance
+        K = P_pred @ H.T @ np.linalg.inv(S)      # Kalman gain
+        nu = y - y_hat
+        xh = xh_pred + K @ nu
+        P = (np.eye(len(xh_pred)) - K @ H) @ P_pred
+        return xh, P, nu, S
 
 class LQIController:
     def __init__(self, model, Ad, Bd):

@@ -15,7 +15,7 @@ OMEGA_MAX = 1.82 # rad/s, from https://docs.robotis.com/docs/systems/turtlebot3/
 # Sensor / loop rates (Hz, in sim time)
 ENCODER_RATE = 50
 CAMERA_RATE = 30
-LIDAR_RATE = 10
+LIDAR_RATE = 5
 VIEWER_RATE = 30
 
 # Names in the MJCF
