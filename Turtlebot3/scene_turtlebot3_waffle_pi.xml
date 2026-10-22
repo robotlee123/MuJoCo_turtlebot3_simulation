@@ -18,19 +18,19 @@
     <texture name="aruco0" type="2d" file="marker_0.png"/>
     <material name="aruco0" texture="aruco0" texuniform="false" specular="0" shininess="0" reflectance="0"/>
 
-    <texture name="aruco1" type="2d" file="marker_0.png"/>
+    <texture name="aruco1" type="2d" file="marker_1.png"/>
     <material name="aruco1" texture="aruco1" texuniform="false" specular="0" shininess="0" reflectance="0"/>
 
-    <texture name="aruco2" type="2d" file="marker_0.png"/>
+    <texture name="aruco2" type="2d" file="marker_2.png"/>
     <material name="aruco2" texture="aruco2" texuniform="false" specular="0" shininess="0" reflectance="0"/>
 
-    <texture name="aruco3" type="2d" file="marker_0.png"/>
+    <texture name="aruco3" type="2d" file="marker_3.png"/>
     <material name="aruco3" texture="aruco3" texuniform="false" specular="0" shininess="0" reflectance="0"/>
 
-    <texture name="aruco4" type="2d" file="marker_0.png"/>
+    <texture name="aruco4" type="2d" file="marker_4.png"/>
     <material name="aruco4" texture="aruco4" texuniform="false" specular="0" shininess="0" reflectance="0"/>
 
-    <texture name="aruco5" type="2d" file="marker_0.png"/>
+    <texture name="aruco5" type="2d" file="marker_5.png"/>
     <material name="aruco5" texture="aruco5" texuniform="false" specular="0" shininess="0" reflectance="0"/>
   </asset>
 

@@ -106,27 +106,37 @@ class Camera:
         #      https://zbotic.in/aruco-marker-detection-pose-estimation-with-opencv-python/
         #      https://medium.com/@lalitsaraf1/aruco-marker-cv2-updated-version-67119b1500e3
         # Detect ArUco markers in the video frame
+        ranges_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+        heading_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         corners, marker_ids, _ = self.detector.detectMarkers(gray)
         if marker_ids is not None:
             cv2.aruco.drawDetectedMarkers(frame, corners, marker_ids)
-            trash = []
             rvecs = []
             tvecs = []
-
+            ranges_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+            heading_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
             for c in corners:
-                nada, R, t = cv2.solvePnP(self.MARKER_POINTS, c, self.camera_mtx, self.distortion_coeff, False, cv2.SOLVEPNP_IPPE_SQUARE)
+                _, R, t = cv2.solvePnP(self.MARKER_POINTS, c, self.camera_mtx, self.distortion_coeff, False, cv2.SOLVEPNP_IPPE_SQUARE)
                 rvecs.append(R)
                 tvecs.append(t)
-                trash.append(nada)
 
             for i in range(len(rvecs)):
                 # Use cv2.drawFrameAxes to draw the axis
                 cv2.drawFrameAxes(frame, self.camera_mtx, self.distortion_coeff, rvecs[i], tvecs[i], 0.03)
                 print(f"Marker ID: {marker_ids[i]}")  # Display the ID of the marker
-                print(f"Rotation Vector: {rvecs[i].flatten()}")
-                print(f"Translation Vector: {tvecs[i].flatten()}")
-        return frame
+                # print(f"Rotation Vector: {rvecs[i].flatten()}")
+                # print(f"Translation Vector: {tvecs[i].flatten()}")
+                
+                x, _, z = tvecs[i].flatten()
+                est_range = np.linalg.norm(tvecs[i])
+                est_heading = np.arctan2(x,z)
+
+                ranges_array[marker_ids[i]] = est_range
+                heading_array[marker_ids[i]] = est_heading
+
+        return frame, ranges_array, heading_array
 
     @staticmethod
     def show(rgb, title="MuJoCo Camera Feed"):

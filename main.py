@@ -68,7 +68,9 @@ def main():
 
             if cam_timer.due(t):
                 frame = camera.read()                    # later: ArUco -> ekf.update(...)
-                frame = camera.aruco_pose(frame)
+                frame, ranges, headings = camera.aruco_pose(frame)
+                print(f"Ranges: {ranges}")
+                print(f"Headings: {headings}")
                 camera.show(frame)
 
             if view_timer.due(t):

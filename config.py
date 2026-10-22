@@ -1,7 +1,7 @@
 """All tunable constants in one place."""
 
 MODEL_PATH = r"Turtlebot3\scene_turtlebot3_waffle_pi.xml"
-SIM_DURATION = 30.0  # seconds of SIM time
+SIM_DURATION = 5.0  # seconds of SIM time
 
 
 
