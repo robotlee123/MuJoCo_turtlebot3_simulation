@@ -6,7 +6,7 @@ import numpy as np
 import config as cfg
 from drive import Drive, RateTimer
 from sensors import Encoders, Lidar, Camera
-from estimation_control import DiffDriveOdometry, ZigZagController, GroundTruthLogger, ErrorModel, LQIController
+from estimation_control import DiffDriveOdometry, ZigZagController, GroundTruthLogger, ErrorModel, LQIController, LinePathGenerator
 
 
 def main():
@@ -21,6 +21,8 @@ def main():
     camera = Camera(model, data)
     controller_temp = ZigZagController()
     logger = GroundTruthLogger(data)
+
+    path = LinePathGenerator()
 
     error_model = ErrorModel(model, 0.26)
 
@@ -40,9 +42,15 @@ def main():
     with mujoco.viewer.launch_passive(model, data) as viewer:
         while viewer.is_running() and data.time < cfg.SIM_DURATION:
             step_start = time.time()
-
             # 1. command (later: LQR using the EKF estimate)
+
             v, omega = controller_temp.command(data.time)
+            # R = data.body(cfg.BASE_BODY).xmat.reshape(3, 3)
+
+            # x = data.body(cfg.BASE_BODY).xpos[0]
+            # y = data.body(cfg.BASE_BODY).xpos[1]
+            # e_y, e_theta, kappa, _ = path.path_error(x,y,np.arctan2(R[1, 0], R[0, 0]))
+            # v, omega = 0.26, controller.step(e_y, e_theta, kappa, 0.26)
             drive.apply(v, omega)
 
             # 2. physics
@@ -60,6 +68,7 @@ def main():
 
             if cam_timer.due(t):
                 frame = camera.read()                    # later: ArUco -> ekf.update(...)
+                frame = camera.aruco_pose(frame)
                 camera.show(frame)
 
             if view_timer.due(t):

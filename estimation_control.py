@@ -33,7 +33,24 @@ class ZigZagController:
 
     def command(self, t):
         omega = -1.82 if int(t) % 2 == 0 else 1.82
-        return 0.2, omega  # (v, omega)
+        return 0.0, omega  # (v, omega)
+
+class LinePathGenerator:
+    def path_error(self, x, y, theta):
+        # Nearest point on the loop. Returns (e_y, e_theta, kappa, s).
+        a, R = 3.0, 2.0
+        if -a <= x <= a:
+            if y < 0:                                        # bottom straight, heading +x
+                e_y, th_p, kappa, s = y + R, 0.0, 0.0, x + a
+            else:                                            # top straight, heading -x
+                e_y, th_p, kappa, s = R - y, np.pi, 0.0, 2*a + np.pi*R + (a - x)
+        elif x > a:                                          # right-hand turn
+            phi = np.arctan2(y, x - a)
+            e_y, th_p, kappa, s = R - np.hypot(x - a, y), phi + np.pi/2, 1/R, 2*a + R*(phi + np.pi/2)
+        else:                                                # left-hand turn
+            phi = np.arctan2(y, x + a) % (2*np.pi)
+            e_y, th_p, kappa, s = R - np.hypot(x + a, y), phi + np.pi/2, 1/R, 4*a + np.pi*R + R*(phi - np.pi/2)
+        return float(e_y), float(wrap(theta - th_p)), float(kappa), float(s)
 
 class EKF_Estimator:
     def __init__(self, model):
@@ -217,3 +234,14 @@ class GroundTruthLogger:
         print(f"final true: {t[-1]}\nfinal est:  {e[-1]}")
         print(f"pos RMSE: {np.sqrt((err[:, :2] ** 2).sum(1).mean()):.4f} m | "
               f"heading RMSE: {np.sqrt((err[:, 2] ** 2).mean()):.4f} rad")
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+    test = SinPathGenerator(1 ,1, 5)
+    path = test.path
+    print(path[:5])
+    plt.scatter(path[:,0], path[:,1])
+    plt.title("Basic Scatter Plot")
+    plt.xlabel("X Values")
+    plt.ylabel("Y Values")
+    plt.show()

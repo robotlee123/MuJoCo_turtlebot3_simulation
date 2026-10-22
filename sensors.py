@@ -77,11 +77,56 @@ class Camera:
         if self.cam_id < 0:
             raise ValueError(f"Camera '{cfg.CAMERA_NAME}' not found in MJCF")
         self.renderer = mujoco.Renderer(model, height=height, width=width)
-
+        
+        self.aruco_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+        self.aruco_parameter = cv2.aruco.DetectorParameters()
+        self.detector = cv2.aruco.ArucoDetector(self.aruco_dictionary, self.aruco_parameter)
+        fovy = model.cam_fovy[self.cam_id] 
+        f = 0.5 * height / np.tan(np.deg2rad(fovy) / 2.0)
+        self.camera_mtx = np.array([ [f, 0, width / 2.0 ],
+                                     [0, f, height / 2.0], 
+                                     [0, 0,      1.0    ]], 
+                                     dtype=np.float64)
+        self.distortion_coeff = np.zeros((1, 5), dtype=np.float64)  # mujoco camera have no distortion
+        MARKER_SIZE = 0.05 #size in meters
+        self.MARKER_POINTS = np.array([
+                                [-MARKER_SIZE / 2,  MARKER_SIZE / 2, 0],
+                                [ MARKER_SIZE / 2,  MARKER_SIZE / 2, 0],
+                                [ MARKER_SIZE / 2, -MARKER_SIZE / 2, 0],
+                                [-MARKER_SIZE / 2, -MARKER_SIZE / 2, 0]
+                                ], dtype=np.float32)
     def read(self):
         """Returns an RGB image (H, W, 3, uint8)."""
         self.renderer.update_scene(self.data, camera=self.cam_id)
         return self.renderer.render()
+
+    def aruco_pose(self, frame):
+        # src: https://automaticaddison.com/how-to-perform-pose-estimation-using-an-aruco-marker/
+        #      https://www.geeksforgeeks.org/computer-vision/detecting-aruco-markers-with-opencv-and-python-1/
+        #      https://zbotic.in/aruco-marker-detection-pose-estimation-with-opencv-python/
+        #      https://medium.com/@lalitsaraf1/aruco-marker-cv2-updated-version-67119b1500e3
+        # Detect ArUco markers in the video frame
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        corners, marker_ids, _ = self.detector.detectMarkers(gray)
+        if marker_ids is not None:
+            cv2.aruco.drawDetectedMarkers(frame, corners, marker_ids)
+            trash = []
+            rvecs = []
+            tvecs = []
+
+            for c in corners:
+                nada, R, t = cv2.solvePnP(self.MARKER_POINTS, c, self.camera_mtx, self.distortion_coeff, False, cv2.SOLVEPNP_IPPE_SQUARE)
+                rvecs.append(R)
+                tvecs.append(t)
+                trash.append(nada)
+
+            for i in range(len(rvecs)):
+                # Use cv2.drawFrameAxes to draw the axis
+                cv2.drawFrameAxes(frame, self.camera_mtx, self.distortion_coeff, rvecs[i], tvecs[i], 0.03)
+                print(f"Marker ID: {marker_ids[i]}")  # Display the ID of the marker
+                print(f"Rotation Vector: {rvecs[i].flatten()}")
+                print(f"Translation Vector: {tvecs[i].flatten()}")
+        return frame
 
     @staticmethod
     def show(rgb, title="MuJoCo Camera Feed"):

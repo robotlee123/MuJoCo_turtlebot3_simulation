@@ -1,6 +1,6 @@
 <mujoco model="TB3-WafflePi scene">
   <include file="turtlebot3_waffle_pi.xml"/>
-
+  <compiler texturedir="assets/aruco/" />
   <statistic center="0.3 0 0.4" extent="1"/>
 
   <visual>
@@ -14,6 +14,24 @@
     <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
       markrgb="0.8 0.8 0.8" width="300" height="300"/>
     <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    
+    <texture name="aruco0" type="2d" file="marker_0.png"/>
+    <material name="aruco0" texture="aruco0" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+
+    <texture name="aruco1" type="2d" file="marker_0.png"/>
+    <material name="aruco1" texture="aruco1" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+
+    <texture name="aruco2" type="2d" file="marker_0.png"/>
+    <material name="aruco2" texture="aruco2" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+
+    <texture name="aruco3" type="2d" file="marker_0.png"/>
+    <material name="aruco3" texture="aruco3" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+
+    <texture name="aruco4" type="2d" file="marker_0.png"/>
+    <material name="aruco4" texture="aruco4" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+
+    <texture name="aruco5" type="2d" file="marker_0.png"/>
+    <material name="aruco5" texture="aruco5" texuniform="false" specular="0" shininess="0" reflectance="0"/>
   </asset>
 
   <worldbody>
@@ -22,5 +40,29 @@
 
     <geom name="red_box" type="box" pos="1.2 1.2 0.2" size=".2 .2 .2" rgba="0 0 1 1"/>
     <geom name="red_box1" type="box" pos="0.5 1.2 0.2" size=".2 .2 .2" rgba="0 0 1 1"/>
+
+    <body name="aruco_marker0" pos="1.0 0.0 0.05">
+      <geom type="plane" size="0.05 0.05 0.001" euler="0 -1.57 -1.57" material="aruco0"/>
+    </body>
+
+    <body name="aruco_marker1" pos="1.0 -0.5 0.05">
+      <geom type="plane" size="0.05 0.05 0.001" euler="0 -1.57 -1.57" material="aruco1"/>
+    </body>
+
+    <body name="aruco_marker2" pos="1.0 -0.75 0.05">
+      <geom type="plane" size="0.05 0.05 0.001" euler="0 -1.57 -1.57" material="aruco2"/>
+    </body>
+
+    <body name="aruco_marker3" pos="1.0 -1.0 0.05">
+      <geom type="plane" size="0.05 0.05 0.001" euler="0 -1.57 -1.57" material="aruco3"/>
+    </body>
+
+    <body name="aruco_marker4" pos="1.0 -1.5 0.05">
+      <geom type="plane" size="0.05 0.05 0.001" euler="0 -1.57 -1.57" material="aruco4"/>
+    </body>
+
+    <body name="aruco_marker5" pos="1.0 -2.0 0.05">
+      <geom type="plane" size="0.05 0.05 0.001" euler="0 -1.57 -1.57" material="aruco5"/>
+    </body>
   </worldbody>
 </mujoco>
