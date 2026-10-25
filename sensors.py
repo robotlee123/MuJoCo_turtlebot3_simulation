@@ -69,10 +69,63 @@ class Lidar:
                 )
             scn.ngeom = n
 
-
+class ArucoMarker:
+    def __init__(self, data):
+        self.aruco_position = [
+            data.body("aruco_marker0").xpos,
+            data.body("aruco_marker1").xpos,
+            data.body("aruco_marker2").xpos,
+            data.body("aruco_marker3").xpos,
+            data.body("aruco_marker4").xpos,
+            data.body("aruco_marker5").xpos,
+            data.body("aruco_marker6").xpos,
+            data.body("aruco_marker7").xpos,
+            data.body("aruco_marker8").xpos,
+            data.body("aruco_marker9").xpos,
+            data.body("aruco_marker10").xpos,
+            data.body("aruco_marker11").xpos,
+            data.body("aruco_marker12").xpos,
+            data.body("aruco_marker13").xpos,
+            data.body("aruco_marker14").xpos,
+            data.body("aruco_marker15").xpos,
+            data.body("aruco_marker16").xpos,
+            data.body("aruco_marker17").xpos,
+            data.body("aruco_marker18").xpos,
+            data.body("aruco_marker19").xpos,
+            data.body("aruco_marker20").xpos,
+            data.body("aruco_marker21").xpos,
+            data.body("aruco_marker22").xpos,
+            data.body("aruco_marker23").xpos,
+            data.body("aruco_marker24").xpos,
+            data.body("aruco_marker25").xpos,
+            data.body("aruco_marker26").xpos,
+            data.body("aruco_marker27").xpos,
+            data.body("aruco_marker28").xpos,
+            data.body("aruco_marker29").xpos,
+            data.body("aruco_marker30").xpos,
+            data.body("aruco_marker31").xpos,
+            data.body("aruco_marker33").xpos,
+            data.body("aruco_marker34").xpos,
+            data.body("aruco_marker35").xpos,
+            data.body("aruco_marker36").xpos,
+            data.body("aruco_marker37").xpos,
+            data.body("aruco_marker38").xpos,
+            data.body("aruco_marker39").xpos,
+            data.body("aruco_marker40").xpos,
+            data.body("aruco_marker41").xpos,
+            data.body("aruco_marker42").xpos,
+            data.body("aruco_marker43").xpos,
+            data.body("aruco_marker44").xpos,
+            data.body("aruco_marker45").xpos,
+            data.body("aruco_marker46").xpos,
+            data.body("aruco_marker47").xpos,
+            data.body("aruco_marker48").xpos,
+            data.body("aruco_marker49").xpos
+        ]
 class Camera:
     def __init__(self, model, data, height=480, width=640):
         self.data = data
+
         self.cam_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, cfg.CAMERA_NAME)
         if self.cam_id < 0:
             raise ValueError(f"Camera '{cfg.CAMERA_NAME}' not found in MJCF")
@@ -88,13 +141,15 @@ class Camera:
                                      [0, 0,      1.0    ]], 
                                      dtype=np.float64)
         self.distortion_coeff = np.zeros((1, 5), dtype=np.float64)  # mujoco camera have no distortion
-        MARKER_SIZE = 0.05 #size in meters
+        MARKER_SIZE = 0.2 #size in meters
         self.MARKER_POINTS = np.array([
                                 [-MARKER_SIZE / 2,  MARKER_SIZE / 2, 0],
                                 [ MARKER_SIZE / 2,  MARKER_SIZE / 2, 0],
                                 [ MARKER_SIZE / 2, -MARKER_SIZE / 2, 0],
                                 [-MARKER_SIZE / 2, -MARKER_SIZE / 2, 0]
                                 ], dtype=np.float32)
+
+        
     def read(self):
         """Returns an RGB image (H, W, 3, uint8)."""
         self.renderer.update_scene(self.data, camera=self.cam_id)
@@ -106,8 +161,16 @@ class Camera:
         #      https://zbotic.in/aruco-marker-detection-pose-estimation-with-opencv-python/
         #      https://medium.com/@lalitsaraf1/aruco-marker-cv2-updated-version-67119b1500e3
         # Detect ArUco markers in the video frame
-        ranges_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-        heading_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+        ranges_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                        np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                        np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                        np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                        np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+        bearing_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                         np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                         np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                         np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                         np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         corners, marker_ids, _ = self.detector.detectMarkers(gray)
@@ -115,28 +178,42 @@ class Camera:
             cv2.aruco.drawDetectedMarkers(frame, corners, marker_ids)
             rvecs = []
             tvecs = []
-            ranges_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-            heading_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+            ranges_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                            np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                            np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                            np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                            np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+            bearing_array = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                             np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                             np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                             np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 
+                             np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
             for c in corners:
                 _, R, t = cv2.solvePnP(self.MARKER_POINTS, c, self.camera_mtx, self.distortion_coeff, False, cv2.SOLVEPNP_IPPE_SQUARE)
+
                 rvecs.append(R)
                 tvecs.append(t)
 
-            for i in range(len(rvecs)):
+            for i in range(len(tvecs)):
                 # Use cv2.drawFrameAxes to draw the axis
                 cv2.drawFrameAxes(frame, self.camera_mtx, self.distortion_coeff, rvecs[i], tvecs[i], 0.03)
-                print(f"Marker ID: {marker_ids[i]}")  # Display the ID of the marker
+                # print(f"Marker ID: {marker_ids[i]}")  # Display the ID of the marker
                 # print(f"Rotation Vector: {rvecs[i].flatten()}")
                 # print(f"Translation Vector: {tvecs[i].flatten()}")
                 
-                x, _, z = tvecs[i].flatten()
-                est_range = np.linalg.norm(tvecs[i])
-                est_heading = np.arctan2(x,z)
+                # transform TO THE BASE JOINT and mujoco convention?
+                
+                x, y, z = tvecs[i].flatten()
+
+                x, y, z = z + 0.078, -x, -y + 0.107
+                
+                est_range = np.linalg.norm([x, y, z])
+                est_bearing = np.arctan2(y,x)
 
                 ranges_array[marker_ids[i]] = est_range
-                heading_array[marker_ids[i]] = est_heading
+                bearing_array[marker_ids[i]] = est_bearing
 
-        return frame, ranges_array, heading_array
+        return frame, ranges_array, bearing_array
 
     @staticmethod
     def show(rgb, title="MuJoCo Camera Feed"):
