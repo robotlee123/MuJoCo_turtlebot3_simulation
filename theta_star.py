@@ -6,13 +6,12 @@ author: Musab Kasbati (@Musab1Blaser)
 
 See Wikipedia article (https://cdn.aaai.org/AAAI/2007/AAAI07-187.pdf)
 
-Source: https://github.com/AtsushiSakai/PythonRobotics/blob/master/PathPlanning/ThetaStar/theta_star.py
 """
 
 import math
 
 import matplotlib.pyplot as plt
-import numpy as np
+
 show_animation = True
 use_theta_star = True
 
@@ -292,37 +291,39 @@ class ThetaStarPlanner:
                   [1, 1, math.sqrt(2)]]
 
         return motion
-X0, Y0, res = -4.05, -3.05, 0.05
-def w2g(x, y):
-    """world (x, y) -> grid (col, row)"""
-    return (int(round((x - X0) / res - 0.5)),
-            int(round((y - Y0) / res - 0.5)))
 
-def g2w(col, row):
-    """grid (col, row) -> world (x, y) at the cell center"""
-    return (X0 + (col + 0.5) * res,
-            Y0 + (row + 0.5) * res)
 
 def main():
     print(__file__ + " start!!")
 
     # start and goal position
-    sx, sy = w2g(3.5,1.5)  
-    gx, gy = w2g(-2.5,-2.5)   
-
-    grid_size = 1.0  
-    robot_radius = 8.0  
+    sx = 10.0  # [m]
+    sy = 10.0  # [m]
+    gx = 50.0  # [m]
+    gy = 50.0  # [m]
+    grid_size = 2.0  # [m]
+    robot_radius = 1.0  # [m]
 
     # set obstacle positions
-    data = np.load("room_map.npy")
-    ox = []
-    oy = []
-    for y, i in enumerate(data):
-        for x, j in enumerate(i):
-            # j = int(j)
-            if j==1:
-                ox.append(x)
-                oy.append(y)
+    ox, oy = [], []
+    for i in range(-10, 60):
+        ox.append(i)
+        oy.append(-10.0)
+    for i in range(-10, 60):
+        ox.append(60.0)
+        oy.append(i)
+    for i in range(-10, 61):
+        ox.append(i)
+        oy.append(60.0)
+    for i in range(-10, 61):
+        ox.append(-10.0)
+        oy.append(i)
+    for i in range(-10, 40):
+        ox.append(20.0)
+        oy.append(i)
+    for i in range(0, 40):
+        ox.append(40.0)
+        oy.append(60.0 - i)
 
     if show_animation:  # pragma: no cover
         plt.plot(ox, oy, ".k")
@@ -333,14 +334,7 @@ def main():
 
     theta_star = ThetaStarPlanner(ox, oy, grid_size, robot_radius)
     rx, ry = theta_star.planning(sx, sy, gx, gy)
-    rx_world, ry_world = [], []
-    for i, x in enumerate(rx):
-        y = rx[i]
-        rx_, ry_ = g2w(x, y)
-        rx_world.append(round(rx_,3))
-        ry_world.append(round(ry_, 3))
 
-    print(rx_world, ry_world)
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
         plt.pause(0.001)

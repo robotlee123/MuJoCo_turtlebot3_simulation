@@ -4,7 +4,7 @@ from drive import wrap
 
 import control as ct
 import sympy as sp
-
+from theta_star import ThetaStarPlanner
 
 class DiffDriveOdometry:
     """Dead reckoning from wheel encoder angles."""
@@ -27,7 +27,6 @@ class DiffDriveOdometry:
     @property
     def pose(self):
         return np.array([self.x, self.y, self.th])
-
 
 class ZigZagController:
     """original zig-zag: flips turn direction every second (sim time)."""
@@ -82,6 +81,57 @@ class AssortedPathGenerator:
                 s = 6*a + np.clip(x + a, 0.0, 2*a)
         kappa = 0.0
         return float(e_y), float(wrap(theta - th_p)), float(kappa), float(s)
+
+class PathGenerator:
+    def __init__(self, start:tuple[float, float], goal:tuple[float, float]):
+        self.X0, self.Y0, self.res = -4.05, -3.05, 0.05
+        self.rx, self.ry = self.plan(start, goal)
+    
+    def w2g(self, x, y):
+        """world (x, y) -> grid (col, row)"""
+        return (int(round((x - self.X0) / self.res - 0.5)),
+                int(round((y - self.Y0) / self.res - 0.5)))
+
+    def g2w(self, col, row):
+        """grid (col, row) -> world (x, y) at the cell center"""
+        return (self.X0 + (col + 0.5) * self.res,
+                self.Y0 + (row + 0.5) * self.res)
+
+    def plan(self, start:tuple[float, float], goal:tuple[float, float]):
+        # start and goal position in world coordinate
+        # Convert start and goal position to grid coordinate
+        sx, sy = self.w2g(start)  
+        gx, gy = self.w2g(goal)   
+
+        grid_size = 1.0  
+        robot_radius = 8.0  
+
+        # set obstacle positions from map
+        data = np.load("room_map.npy")
+        ox = []
+        oy = []
+        for y, i in enumerate(data):
+            for x, j in enumerate(i):
+                # j = int(j)
+                if j==1:
+                    ox.append(x)
+                    oy.append(y)
+
+        # Run planner
+        theta_star = ThetaStarPlanner(ox, oy, grid_size, robot_radius)
+        rx, ry = theta_star.planning(sx, sy, gx, gy)
+
+        #convert from map coordinate back to world
+        rx_world, ry_world = [], []
+        for i, x in enumerate(rx):
+            y = rx[i]
+            rx_, ry_ = self.g2w(x, y)
+            rx_world.append(round(rx_,3))
+            ry_world.append(round(ry_, 3))
+
+        print(rx_world, ry_world)
+
+        return rx_world, ry_world
 
 class EKF_Estimator:
     def __init__(self, model):
