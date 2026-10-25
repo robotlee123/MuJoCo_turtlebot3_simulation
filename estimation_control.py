@@ -85,7 +85,7 @@ class AssortedPathGenerator:
 class PathGenerator:
     def __init__(self, start:tuple[float, float], goal:tuple[float, float]):
         self.X0, self.Y0, self.res = -4.05, -3.05, 0.05
-        self.rx, self.ry = self.plan(start, goal)
+        self.path = self.plan(start, goal)
 
     def w2g(self, coords):
         """world (x, y) -> grid (col, row)"""
@@ -122,15 +122,77 @@ class PathGenerator:
         rx, ry = theta_star.planning(sx, sy, gx, gy)
 
         #convert from map coordinate back to world
-        rx_world, ry_world = [], []
+
+        path_result = []
         for i, x in enumerate(rx):
-            y = rx[i]
+            y = ry[i]
             rx_, ry_ = self.g2w(x, y)
-            rx_world.append(round(rx_,3))
-            ry_world.append(round(ry_, 3))
+            rx_, ry_ = round(rx_,2), round(ry_, 2)
+            path_result.append([rx_, ry_])
+        path_result.reverse()
+        return path_result
+    
+    @staticmethod
+    def compute_path_errors(robot_state, path):
+        """
+        robot_state: [x, y, theta] (theta in radians)
+        path: [[x0, y0], [x1, y1], ..., [xn, yn]]
 
-        return rx_world, ry_world
+        Returns:
+            cte: signed cross-track error
+            heading_error: radians
+            segment_idx: closest segment index
+        """
+        robot_state = np.asarray(robot_state, dtype=float)
+        path = np.asarray(path, dtype=float)
 
+        R = robot_state[:2]
+        theta = robot_state[2]
+
+        # Consecutive waypoint pairs define the segments
+        A = path[:-1]
+        B = path[1:]
+        V = B - A
+
+        # Ignore zero-length segments
+        length_sq = np.sum(V**2, axis=1)
+        valid = length_sq > 1e-12
+
+        if not np.any(valid):
+            raise ValueError("Path has no valid segments")
+
+        # Project robot onto each segment
+        t = np.sum((R - A) * V, axis=1) / np.maximum(length_sq, 1e-12)
+        t = np.clip(t, 0.0, 1.0)
+
+        # Closest point on each segment
+        Q = A + t[:, None] * V
+
+        # Squared distances to closest points
+        W = R - Q
+        dist_sq = np.sum(W**2, axis=1)
+        dist_sq[~valid] = np.inf
+
+        # Select closest segment
+        idx = np.argmin(dist_sq)
+
+        v = V[idx]
+        w = W[idx]
+
+        # Signed cross-track error
+        cte = (
+            v[0] * w[1] - v[1] * w[0]
+        ) / np.sqrt(length_sq[idx])
+
+        # Desired heading along the selected segment
+        theta_path = np.arctan2(v[1], v[0])
+
+        # Heading error, wrapped to [-pi, pi]
+        heading_error = -wrap(theta_path - theta)
+
+        return cte, heading_error, idx
+
+    
 class EKF_Estimator:
     def __init__(self, model):
         self.T = model.opt.timestep
@@ -214,8 +276,8 @@ class LQIController:
                     [self.T, 0,   np.ones((1, 1))]])
         Bd_i = np.vstack([self.Bd, np.zeros((1, 1))])
 
-        Qa = np.diag([1/0.1**2, 1/np.deg2rad(5)**2, 100.0]) # CHANGE THIS BRO
-        Ra = np.array([[1/0.20**2]])                          # AND THIS!!!!!!!!!!!!!!!
+        Qa = np.diag([1/0.01**2, 1/np.deg2rad(1)**2, 100.0]) # CHANGE THIS BRO
+        Ra = np.array([[1/1.82**2]])                          # AND THIS!!!!!!!!!!!!!!!
         self.K, _, Ea = ct.dlqr(Ad_i, Bd_i, Qa, Ra)
         print("closed-loop poles :", np.abs(Ea))
         print("gain: ", self.K)
@@ -302,7 +364,8 @@ class GroundTruthLogger:
         self.t.append(t)
         self.true_pose.append(self.true())
         self.est_pose.append(np.asarray(est_pose))
-        print( np.sqrt((np.asarray(est_pose) - self.true())**2))
+        # print( np.sqrt((np.asarray(est_pose) - self.true())**2))
+        # print(est_pose)
 
     def summary(self):
         t = np.array(self.true_pose)
@@ -317,4 +380,4 @@ class GroundTruthLogger:
 
 if __name__ == "__main__":
     planner = PathGenerator((3.5,1.5),(-2.5,-2.5))
-    print(planner.rx, planner.ry)
+    print(planner.path)
