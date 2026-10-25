@@ -12,7 +12,7 @@ import math
 
 import matplotlib.pyplot as plt
 
-show_animation = True
+show_animation = False
 use_theta_star = True
 
 

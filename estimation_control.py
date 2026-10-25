@@ -86,11 +86,11 @@ class PathGenerator:
     def __init__(self, start:tuple[float, float], goal:tuple[float, float]):
         self.X0, self.Y0, self.res = -4.05, -3.05, 0.05
         self.rx, self.ry = self.plan(start, goal)
-    
-    def w2g(self, x, y):
+
+    def w2g(self, coords):
         """world (x, y) -> grid (col, row)"""
-        return (int(round((x - self.X0) / self.res - 0.5)),
-                int(round((y - self.Y0) / self.res - 0.5)))
+        return (int(round((coords[0] - self.X0) / self.res - 0.5)),
+                int(round((coords[1] - self.Y0) / self.res - 0.5)))
 
     def g2w(self, col, row):
         """grid (col, row) -> world (x, y) at the cell center"""
@@ -128,8 +128,6 @@ class PathGenerator:
             rx_, ry_ = self.g2w(x, y)
             rx_world.append(round(rx_,3))
             ry_world.append(round(ry_, 3))
-
-        print(rx_world, ry_world)
 
         return rx_world, ry_world
 
@@ -316,3 +314,7 @@ class GroundTruthLogger:
         print(f"final true: {t[-1]}\nfinal est:  {e[-1]}")
         print(f"pos RMSE: {np.sqrt((err[:, :2] ** 2).sum(1).mean()):.4f} m | "
               f"heading RMSE: {np.sqrt((err[:, 2] ** 2).mean()):.4f} rad")
+
+if __name__ == "__main__":
+    planner = PathGenerator((3.5,1.5),(-2.5,-2.5))
+    print(planner.rx, planner.ry)
