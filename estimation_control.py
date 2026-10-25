@@ -5,6 +5,7 @@ from drive import wrap
 import control as ct
 import sympy as sp
 
+
 class DiffDriveOdometry:
     """Dead reckoning from wheel encoder angles."""
 
@@ -35,8 +36,8 @@ class ZigZagController:
         omega = -1.82 if int(t) % 2 == 0 else 1.82
         return 0.0, omega  # (v, omega)
 
-class LinePathGenerator:
-    def path_error(self, x, y, theta):
+class AssortedPathGenerator:
+    def path_error_pill(self, x, y, theta):
         # Nearest point on the loop. Returns (e_y, e_theta, kappa, s).
         a, R = 3.0, 2.0
         if -a <= x <= a:
@@ -51,13 +52,43 @@ class LinePathGenerator:
             phi = np.arctan2(y, x + a) % (2*np.pi)
             e_y, th_p, kappa, s = R - np.hypot(x + a, y), phi + np.pi/2, 1/R, 4*a + np.pi*R + R*(phi - np.pi/2)
         return float(e_y), float(wrap(theta - th_p)), float(kappa), float(s)
+    def path_error_circle(self, x, y, theta):
+        # Nearest point on a circle of radius R centered at (0, 0), traversed CCW.
+        # Returns (e_y, e_theta, kappa, s).
+        R = 1.0
+        phi = np.arctan2(y, x) % (2 * np.pi)       # polar angle in [0, 2*pi)
+        e_y = R - np.hypot(x, y)                   # + inside the circle (left of travel)
+        th_p = phi + np.pi / 2                     # CCW tangent heading
+        kappa = 1.0 / R
+        s = R * phi                                # arc length from (R, 0), in [0, 2*pi*R)
+        return float(e_y), float(wrap(theta - th_p)), float(kappa), float(s)
+    def path_error_square(self, x, y, theta):
+        # Nearest point on a square of half-side a centered at (0, 0), traversed CCW.
+        # Starts at the bottom-right corner (a, -a). Returns (e_y, e_theta, kappa, s).
+        a = 0.5
+        if abs(x) >= abs(y):
+            if x >= 0:                                   # right edge, heading +y
+                e_y, th_p = a - x, np.pi / 2
+                s = np.clip(y + a, 0.0, 2*a)
+            else:                                        # left edge, heading -y
+                e_y, th_p = x + a, -np.pi / 2
+                s = 4*a + np.clip(a - y, 0.0, 2*a)
+        else:
+            if y >= 0:                                   # top edge, heading -x
+                e_y, th_p = a - y, np.pi
+                s = 2*a + np.clip(a - x, 0.0, 2*a)
+            else:                                        # bottom edge, heading +x
+                e_y, th_p = y + a, 0.0
+                s = 6*a + np.clip(x + a, 0.0, 2*a)
+        kappa = 0.0
+        return float(e_y), float(wrap(theta - th_p)), float(kappa), float(s)
 
 class EKF_Estimator:
     def __init__(self, model):
         self.T = model.opt.timestep
 
-        self.Q_D = np.diag([(0.02*0.1)**2, (0.02*0.1)**2, np.deg2rad(4.5)**2])
-        self.R_N = np.array([[0.08**2]])
+        self.Q_D = np.diag([(0.2*0.1)**2, (0.2*0.1)**2, np.deg2rad(4.5)**2]) #change this
+        self.R_N = np.diag([0.3**2 , np.deg2rad(10)**2])                    #change this
 
     def f_uni(self, x, dl, dr):
         v = (dl + dr) / (2 * self.T)
@@ -100,15 +131,15 @@ class EKF_Estimator:
         return np.array([[-dx / r, -dy / r,  0.0],
                         [ dy / q, -dx / q, -1.0]])
     
-    def ekf_predict(self, xh, P, dl, dr):
+    def predict(self, xh, P, dl, dr):
         xh_pred = self.f_uni(xh, dl, dr)              # nonlinear f propagates the state
         F = self.F_uni(xh, dl, dr)                    # Jacobian propagates the covariance
         P_pred = F @ P @ F.T + self.Q_D
         return xh_pred, P_pred
     
-    def ekf_update(self, xh_pred, P_pred, y):
-        y_hat = self.h_aruco(xh_pred)            # nonlinear h gives the expected measurement
-        H = self.H_aruco(xh_pred)
+    def update(self, xh_pred, P_pred, y, marker):
+        y_hat = self.h_aruco(xh_pred, marker)            # nonlinear h gives the expected measurement
+        H = self.H_aruco(xh_pred, marker)
         S = H @ P_pred @ H.T + self.R_N          # innovation covariance
         K = P_pred @ H.T @ np.linalg.inv(S)      # Kalman gain
         nu = y - y_hat
@@ -135,8 +166,8 @@ class LQIController:
                     [self.T, 0,   np.ones((1, 1))]])
         Bd_i = np.vstack([self.Bd, np.zeros((1, 1))])
 
-        Qa = np.diag([1/0.2**2, 1/np.deg2rad(15)**2, 100.0]) # CHANGE THIS BRO
-        Ra = np.array([[1/0.1**2]])                          # AND THIS!!!!!!!!!!!!!!!
+        Qa = np.diag([1/0.1**2, 1/np.deg2rad(5)**2, 100.0]) # CHANGE THIS BRO
+        Ra = np.array([[1/0.20**2]])                          # AND THIS!!!!!!!!!!!!!!!
         self.K, _, Ea = ct.dlqr(Ad_i, Bd_i, Qa, Ra)
         print("closed-loop poles :", np.abs(Ea))
         print("gain: ", self.K)
@@ -223,6 +254,7 @@ class GroundTruthLogger:
         self.t.append(t)
         self.true_pose.append(self.true())
         self.est_pose.append(np.asarray(est_pose))
+        print( np.sqrt((np.asarray(est_pose) - self.true())**2))
 
     def summary(self):
         t = np.array(self.true_pose)
@@ -234,14 +266,3 @@ class GroundTruthLogger:
         print(f"final true: {t[-1]}\nfinal est:  {e[-1]}")
         print(f"pos RMSE: {np.sqrt((err[:, :2] ** 2).sum(1).mean()):.4f} m | "
               f"heading RMSE: {np.sqrt((err[:, 2] ** 2).mean()):.4f} rad")
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    test = SinPathGenerator(1 ,1, 5)
-    path = test.path
-    print(path[:5])
-    plt.scatter(path[:,0], path[:,1])
-    plt.title("Basic Scatter Plot")
-    plt.xlabel("X Values")
-    plt.ylabel("Y Values")
-    plt.show()
