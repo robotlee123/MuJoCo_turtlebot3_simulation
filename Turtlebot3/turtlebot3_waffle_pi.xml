@@ -35,7 +35,7 @@
   </default>
 
   <worldbody>
-    <body name="base" pos="0 0 0">
+    <body name="base" pos="3.5 1.5 0" euler="0 0 3.14">
       <inertial pos="-0.064 0 0.06" mass="1.8" diaginertia="0.01 0.01 0.008"/>
       <joint type="free" name="base_joint"/>
       <geom pos="-0.064 0 0.01" mesh="waffle_pi_base" material="black" class="visual"/>
