@@ -1,15 +1,21 @@
+import random
+random.seed(0)
 import numpy as np
+np.random.seed(0)
 import config as cfg
 from drive import wrap
 
 import control as ct
 import sympy as sp
-from theta_star import ThetaStarPlanner
 
 from spatialmath import SE2
 import open3d as o3d
 
 import matplotlib.pyplot as plt
+
+from python_motion_planning.common import *
+from python_motion_planning.path_planner import *
+from python_motion_planning.controller import *
 
 class DiffDriveOdometry:
     """Dead reckoning from wheel encoder angles."""
@@ -88,11 +94,18 @@ class AssortedPathGenerator:
         return float(e_y), float(wrap(theta - th_p)), float(kappa), float(s)
 
 class PathGenerator:
-    def __init__(self, map_path):
+    def __init__(self, map_path, inflation_radius = 8):
+        self.raw_map = np.load(map_path)
+        self.inflation_radius = inflation_radius
+        
         self.X0, self.Y0, self.res = -4.05, -3.05, 0.05
+
+        self.y_bound, self.x_bound = 0, 0
         self.path = []
-        self.ox, self.oy = [], []
-        self.load_map(map_path)
+        self.map_ = None
+
+        self.load_map()
+
     def w2g(self, coords):
         """world (x, y) -> grid (col, row)"""
         return (int(round((coords[0] - self.X0) / self.res - 0.5)),
@@ -102,15 +115,17 @@ class PathGenerator:
         """grid (col, row) -> world (x, y) at the cell center"""
         return (self.X0 + (col + 0.5) * self.res,
                 self.Y0 + (row + 0.5) * self.res)
-    def load_map(self, map_path):
-        # set obstacle positions from map
-        data = np.load(map_path)
-        for y, i in enumerate(data):
+    
+    def load_map(self):
+        # Load raw map into python_motion map
+        self.y_bound, self.x_bound = self.raw_map.shape
+        self.map_ = Grid(bounds=[[0, self.x_bound], [0, self.y_bound]], strict_collision=True)
+        self.map_.fill_boundary_with_obstacles()
+        for y, i in enumerate(self.raw_map):
             for x, j in enumerate(i):
-                # j = int(j)
                 if j == 1:
-                    self.ox.append(x)
-                    self.oy.append(y)
+                    self.map_[x,y] = TYPES.OBSTACLE
+        self.map_.inflate_obstacles(radius=self.inflation_radius)
 
     def to_o3d(self, pts_2d: np.ndarray, normals_2d: np.ndarray = None) -> o3d.geometry.PointCloud:
         """o3d only accepts 3d coordinates, this add a z axis that is 0, and adds the normals if needed"""
@@ -132,20 +147,19 @@ class PathGenerator:
         norms = np.linalg.norm(n, axis=1, keepdims=True)
         return n / np.maximum(norms, 1e-12)
     
-    def add_local_map(self, ox, oy):
-        ox_grid = []
-        oy_grid = []
+    def add_local_map(self, local_map):
+        self.load_map()
         #convert new points to grid coords
-        for idx, x in enumerate(ox):
-            x_, y_ = self.w2g((x, oy[idx]))
-            ox_grid.append(x_)
-            oy_grid.append(y_)
+        #from here the maps are still numpy arrays and in grid coords
         obstacle_new = []
-        for idx, x in enumerate(ox_grid):
-            obstacle_new.append([x, oy_grid[idx]])
+        for coords in local_map:
+            obstacle_new.append(self.w2g((coords[0], coords[1])))
+
         obstacle_map = []
-        for idx, x in enumerate(self.ox):
-            obstacle_map.append([x, self.oy[idx]])
+        for y, i in enumerate(self.raw_map):
+            for x, j in enumerate(i):
+                if j == 1:
+                    obstacle_map.append([x,y])
 
         obstacle_new = np.array(obstacle_new)
         obstacle_map = np.array(obstacle_map)
@@ -166,42 +180,34 @@ class PathGenerator:
         T_icp =  SE2(T[0, 3], T[1, 3], yaw)
         # transform new obstacles to align with map
         aligned = (T_icp * obstacle_new.T).T
-        aligned_ox = list(aligned[:,0])
-        aligned_oy = list(aligned[:,1])
-        augmented_ox = self.ox + aligned_ox
-        augmented_oy = self.oy + aligned_oy
-        return augmented_ox, augmented_oy
+
+        for coords in aligned:
+            if int(coords[0]) < self.x_bound and int(coords[1]) < self.y_bound:
+                self.map_[int(coords[0]), int(coords[1])] = TYPES.OBSTACLE
+        self.map_.inflate_obstacles(radius=self.inflation_radius)
     
     def plan(self, start:tuple[float, float], goal:tuple[float, float], local_map=None):
         # start and goal position in world coordinate
         # Convert start and goal position to grid coordinate
-        sx, sy = self.w2g(start)  
-        gx, gy = self.w2g(goal)   
-
-        grid_size = 1.0  
-        robot_radius = 8.0  
+        start = self.w2g(start)  
+        goal = self.w2g(goal)   
+        # strict_vis = Visualizer2D()
         # Run planner
-        if local_map == None:
-            theta_star = ThetaStarPlanner(self.ox, self.oy, grid_size, robot_radius)
-        else:
+        if local_map != None:
+            self.add_local_map(np.asarray(local_map))            
+            # strict_vis.plot_grid_map(self.map_)
 
-            local_map = np.asarray(local_map)
-            
-            ox, oy = self.add_local_map(local_map[:,0], local_map[:,1])
-            # plt.scatter(ox, oy)
-            
-            # plt.show()
-            theta_star = ThetaStarPlanner(ox, oy, grid_size, robot_radius)
-        
-        rx, ry = theta_star.planning(sx, sy, gx, gy)
+        planner = LazyThetaStar(map_=self.map_, start=start, goal=goal)
+        path, _ = planner.plan()
+
+        # if local_map != None:
+        #     strict_vis.plot_path(path, style="--", color="C4")
+        #     strict_vis.show()
+        #     strict_vis.close()
 
         path_result = []
-        for i, x in enumerate(rx):
-            y = ry[i]
-            rx_, ry_ = self.g2w(x, y)
-            rx_, ry_ = round(rx_,2), round(ry_, 2)
-            path_result.append([rx_, ry_])
-        path_result.reverse() # for some reason the path is reversed
+        for waypoint in path:
+            path_result.append(self.g2w(waypoint[0], waypoint[1]))
         self.path = path_result
     
     @staticmethod
@@ -560,6 +566,3 @@ class GroundTruthLogger:
 
         plt.show()
 
-if __name__ == "__main__":
-    planner = PathGenerator((3.5,1.5),(-2.5,-2.5))
-    print(planner.path)
