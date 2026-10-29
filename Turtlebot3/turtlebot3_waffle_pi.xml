@@ -46,7 +46,7 @@
       <body name="lidar_base" pos="-0.049 0 0.1255">
         <geom mesh="lds" material="black" class="visual"/>
         <geom mesh="lds" class="collision"/>
-        <site name="lidar_site"/>
+        <site name="lidar_site" euler="0 0 3.14"/>
       </body>
 
       <body name="camera_base" pos="0.078 0 0.107" >

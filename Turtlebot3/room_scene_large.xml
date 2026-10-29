@@ -149,10 +149,15 @@
     <camera name="corner_cam_nw" pos="-3.6 2.6 2.6"  xyaxes="-0.707 -0.707 0 0.212 -0.212 0.9"/>
     <camera name="top_cam" pos="0 0 2.9" xyaxes="1 0 0 0 1 0" fovy="110"/>
 
+    <!-- <body name="visual_cube1" pos="0 0 0.1">
+      <geom type="box" size="0.2 0.2 0.1" rgba="1 0 0 0.15" contype="0" conaffinity="0"/>
+    </body>  -->
 
-    <body name="visual_cube" pos="0 0 0.1">
-      <geom type="box" size="0.5 0.5 0.1" rgba="1 0 0 0.5" contype="0" conaffinity="0"/>
+    <body name="visual_cube2" pos="1 0 0.1">
+      <geom type="box" size="0.2 0.2 0.1" rgba="1 0 0 0.15" contype="0" conaffinity="0"/>
     </body> 
+
+
     ===== ROOM: 8 m x 6 m x 3 m, closed =====
     <geom name="floor"   type="box" pos="0 0 -0.025"   size="4.05 3.05 0.025" material="floor_mat"/>
     <geom name="ceiling" type="box" pos="0 0 3.025"    size="4.05 3.05 0.025" material="ceiling_mat" contype="0" conaffinity="0"/>
@@ -336,10 +341,10 @@
     <body name="aruco_marker11" pos="-1.8 -2.998 0.1">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco11" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker12" pos="-1.2 -2.998 0.1">
+    <body name="aruco_marker12" pos="-1.2 -2.998 1.2">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco12" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker13" pos="1.35 -2.998 0.1">
+    <body name="aruco_marker13" pos="0 -2.998 1.2">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco13" contype="0" conaffinity="0"/>
     </body>
     <body name="aruco_marker14" pos="3.998 -2.1 0.1">
@@ -357,25 +362,25 @@
     <body name="aruco_marker18" pos="3.998 2.8 0.1">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 -1 0 0 0 1" material="aruco18" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker19" pos="-3.998 -2.8 0.1">
-      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco19" contype="0" conaffinity="0"/>
+    <body name="aruco_marker19" pos="-2.4 -2.998 1.0">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco19" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker20" pos="-3.998 -0.6 0.1">
+    <body name="aruco_marker20" pos="-3.998 -0.6 1.0">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco20" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker21" pos="-3.998 0 0.1">
+    <body name="aruco_marker21" pos="-3.998 0 1.0">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco21" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker22" pos="-3.998 0.6 0.1">
+    <body name="aruco_marker22" pos="-3.998 0.6 1.0">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco22" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker23" pos="-3.998 1.2 0.1">
+    <body name="aruco_marker23" pos="-3.998 1.2 1.0">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco23" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker24" pos="-3.998 1.8 0.1">
+    <body name="aruco_marker24" pos="-3.998 1.8 1.0">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco24" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker25" pos="-3.998 2.4 0.1">
+    <body name="aruco_marker25" pos="-3.998 2.4 1.0">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco25" contype="0" conaffinity="0"/>
     </body>
     <body name="aruco_marker26" pos="-3.398 -2.1 0.1">
@@ -387,8 +392,8 @@
     <body name="aruco_marker28" pos="-3.398 -1.5 0.1">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco28" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker29" pos="-3.7 -1.198 0.1">
-      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco29" contype="0" conaffinity="0"/>
+    <body name="aruco_marker29" pos="-3.998 -0.6 0.5">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco29" contype="0" conaffinity="0"/>
     </body>
     <body name="aruco_marker30" pos="-3.7 -2.402 0.1">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco30" contype="0" conaffinity="0"/>

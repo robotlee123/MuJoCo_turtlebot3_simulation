@@ -37,10 +37,8 @@ class Lidar:
             },
         )
         self.theta, self.phi = scan_gen.create_lidar_single_line()
-
     def scan(self):
-        """Returns hit points (N,3). Check whether the library gives them in
-        sensor or world frame before using them."""
+        """Returns hit points (N,3)."""
         self.sensor.trace_rays(self.data, self.theta, self.phi)
         return self.sensor.get_hit_points()
 
@@ -50,7 +48,6 @@ class Lidar:
         valid = np.isfinite(pts).all(axis=1) & (np.linalg.norm(pts, axis=1) < 49.9)
         pts = pts[valid]
 
-        # If get_hit_points() is in the sensor frame, convert to world frame:
         R = self.data.site_xmat[self.site_id].reshape(3, 3)
         p = self.data.site_xpos[self.site_id]
         pts_world = pts @ R.T + p
@@ -104,6 +101,7 @@ class ArucoMarker:
             data.body("aruco_marker29").xpos,
             data.body("aruco_marker30").xpos,
             data.body("aruco_marker31").xpos,
+            data.body("aruco_marker32").xpos,
             data.body("aruco_marker33").xpos,
             data.body("aruco_marker34").xpos,
             data.body("aruco_marker35").xpos,
@@ -155,7 +153,7 @@ class Camera:
         self.renderer.update_scene(self.data, camera=self.cam_id)
         return self.renderer.render()
 
-    def aruco_pose(self, frame):
+    def aruco_pose(self, frame, draw = False):
         # src: https://automaticaddison.com/how-to-perform-pose-estimation-using-an-aruco-marker/
         #      https://www.geeksforgeeks.org/computer-vision/detecting-aruco-markers-with-opencv-and-python-1/
         #      https://zbotic.in/aruco-marker-detection-pose-estimation-with-opencv-python/
@@ -195,8 +193,9 @@ class Camera:
                 tvecs.append(t)
 
             for i in range(len(tvecs)):
-                # Use cv2.drawFrameAxes to draw the axis
-                cv2.drawFrameAxes(frame, self.camera_mtx, self.distortion_coeff, rvecs[i], tvecs[i], 0.03)
+                if draw:
+                    # Use cv2.drawFrameAxes to draw the axis
+                    cv2.drawFrameAxes(frame, self.camera_mtx, self.distortion_coeff, rvecs[i], tvecs[i], 0.03)
                 # print(f"Marker ID: {marker_ids[i]}")  # Display the ID of the marker
                 # print(f"Rotation Vector: {rvecs[i].flatten()}")
                 # print(f"Translation Vector: {tvecs[i].flatten()}")
@@ -207,7 +206,7 @@ class Camera:
 
                 x, y, z = z + 0.078, -x, -y + 0.107
                 
-                est_range = np.linalg.norm([x, y, z])
+                est_range = np.linalg.norm([x, y])
                 est_bearing = np.arctan2(y,x)
 
                 ranges_array[marker_ids[i]] = est_range
