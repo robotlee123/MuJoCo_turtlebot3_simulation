@@ -99,11 +99,11 @@ class PathGenerator:
         self.inflation_radius = inflation_radius
         
         self.X0, self.Y0, self.res = -4.05, -3.05, 0.05
-
         self.y_bound, self.x_bound = 0, 0
-        self.path = []
-        self.map_ = None
 
+        self.path = [] #stores current path being tracked
+        self.map_ = None
+        self.path_history = [] #stores all the generated path
         self.load_map()
 
     def w2g(self, coords):
@@ -166,13 +166,14 @@ class PathGenerator:
 
         target_normals = self.estimate_normals_2d(obstacle_map, radius=5)
         #ICP is used to align the local map to global map, because the predicted state not correct.                                                                 
-        result = o3d.pipelines.registration.registration_icp( self.to_o3d(obstacle_new), #source,
-                                                             self.to_o3d(obstacle_map, target_normals), #target,
-                                                             25, # max_dist,
-                                                             np.eye(4),#init
-                                                             o3d.pipelines.registration.TransformationEstimationPointToPlane(),
-                                                             o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=500),
-                                                             ) # tested point to point it did not work
+        result = o3d.pipelines.registration.registration_icp(
+            self.to_o3d(obstacle_new), #source,
+            self.to_o3d(obstacle_map, target_normals), #target,
+            25, # max_dist,
+            np.eye(4),#init
+            o3d.pipelines.registration.TransformationEstimationPointToPlane(),
+            o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=500),
+            ) # tested point to point it did not work
 
         T = result.transformation
         # preserve x, y and theta
@@ -182,7 +183,7 @@ class PathGenerator:
         aligned = (T_icp * obstacle_new.T).T
 
         for coords in aligned:
-            if int(coords[0]) < self.x_bound and int(coords[1]) < self.y_bound:
+            if int(coords[0]) < self.x_bound and int(coords[1]) < self.y_bound: # rejects coords that are out of bounds
                 self.map_[int(coords[0]), int(coords[1])] = TYPES.OBSTACLE
         self.map_.inflate_obstacles(radius=self.inflation_radius)
     
@@ -208,6 +209,7 @@ class PathGenerator:
         path_result = []
         for waypoint in path:
             path_result.append(self.g2w(waypoint[0], waypoint[1]))
+        self.path_history.append(np.asarray(path_result))
         self.path = path_result
     
     @staticmethod
@@ -470,46 +472,41 @@ class GroundTruthLogger:
         # sim time, x_true, xh/x_predict
         self.t, self.true_pose, self.est_pose = [], [], []
         self.P, self.U = [], []
+        self.e_y_true, self.e_y_est = [], []
+
     def true(self):
         p = self.data.body(cfg.BASE_BODY).xpos
         R = self.data.body(cfg.BASE_BODY).xmat.reshape(3, 3)
         return np.array([p[0], p[1], np.arctan2(R[1, 0], R[0, 0])])
 
-    def record(self, t, est_pose, P, U):
+    def record(self, t, est_pose, P, U, e_y_est, path_gen:PathGenerator):
         self.t.append(t)
         self.true_pose.append(self.true())
         self.est_pose.append(np.asarray(est_pose))
         self.P.append(np.asarray(P))
         self.U.append(np.asarray(U))
-
+        e_y_true, _, _, = path_gen.compute_path_errors(self.true(), path_gen.path)
+        self.e_y_true.append(e_y_true)
+        self.e_y_est.append(e_y_est)
 
     def summary(self, path_gen:PathGenerator):
+        self.e_y_true = np.asarray(self.e_y_true)
+        self.e_y_est = np.asarray(self.e_y_est)
+
         self.t, self.true_pose, self.est_pose = np.asarray(self.t), np.asarray(self.true_pose), np.asarray(self.est_pose)
         self.P, self.U = np.asarray(self.P), np.asarray(self.U)
         sig_pos = np.sqrt(self.P[:, 0, 0] + self.P[:, 1, 1])
         CHI2_3_95 = 7.815
-        e_y_true = []
-        for x in self.true_pose:
-            e_y_, _, _ = path_gen.compute_path_errors(x, path_gen.path)
-            e_y_true.append(e_y_)
-        e_y_true = np.asarray(e_y_true)
-
-        e_y_est = []
-        for x in self.est_pose:
-            e_y_, _, _ = path_gen.compute_path_errors(x, path_gen.path)
-            e_y_est.append(e_y_)
-        e_y_est = np.asarray(e_y_est)
-
-        m = {"rms_ey": np.sqrt(np.mean(e_y_true**2)),
-            "mean_ey": np.mean(e_y_true),
-            "max_ey": np.max(np.abs(e_y_true))
+        
+        m = {"rms_ey": np.sqrt(np.mean(self.e_y_true**2)),
+            "mean_ey": np.mean(self.e_y_true),
+            "max_ey": np.max(np.abs(self.e_y_true))
             }
         
         fb = self.U[:, 1] #path is line segments so kappa is 0.0
         m.update({"rms_fb":np.sqrt(np.mean(fb**2))})
 
         nees = []
-
         t = np.array(self.true_pose)
         e = np.array(self.est_pose)
         if len(t) == 0:
@@ -539,14 +536,14 @@ class GroundTruthLogger:
         print("NEES inside 95% bound  : ", m["nees_inside"])
 
         fig, axs = plt.subplots(2, 2, figsize=(16, 11))
-        target_path = np.array(path_gen.path)
+        for idx, path_ in enumerate(path_gen.path_history):
+            axs[0, 0].plot(path_[:, 0], path_[:, 1], "k-", lw=1.2, label=f"Target path{idx + 1}")
         axs[0, 0].plot(self.true_pose[:, 0], self.true_pose[:, 1], "b-", lw=1.2, label="true path")
-        axs[0, 0].plot(target_path[:, 0], target_path[:, 1], "k-", lw=1.2, label="Target path")
         axs[0, 0].plot(self.est_pose[:, 0], self.est_pose[:, 1], "r-", lw=0.8, alpha=0.7, label="EKF estimate")
         axs[0, 0].set_title("Trajectory", fontweight="bold"); axs[0, 0].legend(loc="upper center", ncol=3, fontsize=8)
         
-        axs[0, 1].plot(self.t, 100 * e_y_true, "k-", lw=1, label="true $e_y$")
-        axs[0, 1].plot(self.t, 100 * e_y_est, "r-", lw=0.8, alpha=0.7, label="estimated $e_y$ (what the controller sees)")
+        axs[0, 1].plot(self.t, 100 * self.e_y_true, "k-", lw=1, label="true $e_y$")
+        axs[0, 1].plot(self.t, 100 * self.e_y_est, "r-", lw=0.8, alpha=0.7, label="estimated $e_y$ (what the controller sees)")
         axs[0, 1].set_ylim(-30, 30); axs[0, 1].set_xlabel("time [s]"); axs[0, 1].set_ylabel("cross-track error [cm]")
         axs[0, 1].set_title(f"Cross-track error (RMS {100*m["rms_ey"]:.1f} cm, mean {100*m["mean_ey"]:+.1f} cm)", fontweight="bold")
         axs[0, 1].legend(loc="upper right", fontsize=8); axs[0, 1].grid(True, ls="--", alpha=0.5)

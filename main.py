@@ -81,11 +81,13 @@ def main():
             if enc_timer.due(t):
                 est = odom.update(*encoders.read())      
                 xh, P = estimator.predict(xh, P, odom.dl, odom.dr)
-                logger.record(t, xh, P, [v, omega])
+                logger.record(t, xh, P, [v, omega], e_y, path_gen)
+
             if lidar_timer.due(t):
                 points = lidar.scan()                    # later: occupancy grid
                 lidar.draw_points(viewer=viewer, pts=points)
                 local_map.update_map(points, xh)
+                
             if cam_timer.due(t):
                 frame = camera.read()                    
                 frame, ranges, bearings = camera.aruco_pose(frame)
