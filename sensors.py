@@ -200,11 +200,9 @@ class Camera:
                 # print(f"Rotation Vector: {rvecs[i].flatten()}")
                 # print(f"Translation Vector: {tvecs[i].flatten()}")
                 
-                # transform TO THE BASE JOINT and mujoco convention?
-                
                 x, y, z = tvecs[i].flatten()
 
-                x, y, z = z + 0.078, -x, -y + 0.107
+                x, y, z = z + 0.078, -x, -y + 0.107 # Change from OpenCV convention and transform to base from camera_base
                 
                 est_range = np.linalg.norm([x, y])
                 est_bearing = np.arctan2(y,x)
