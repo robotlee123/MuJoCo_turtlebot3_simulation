@@ -541,19 +541,26 @@ class GroundTruthLogger:
             "anees":anees,
             "nees_inside":nees_inside
             })
-        print("RMS feedback steering: ", m["rms_fb"])
+        
+        print("Position RMSE: ", m["pos_rmse"])        
         print("Max true crosstrack error: ", m["max_ey"])
-        print("Mean true crosstrack error: ", m["mean_ey"])
-        print("RMS true crosstrack: ", m["rms_ey"])
-        print("Position RMSE: ", m["pos_rmse"])
-        print("ANEES (ideal about 3): ", m["anees"])
+        print("######"*10)
+        print("S1: RMS true crosstrack: ", m["rms_ey"])         #s1 of prev assignment
+        print("S2: Mean true crosstrack error: ", m["mean_ey"]) #s2
+
+        print("S3: RMS feedback steering: ", m["rms_fb"])       #s3
+        print("S4: ANEES (ideal about 3): ", m["anees"])        #s4
+        print("######"*10)
         print("NEES inside 95% bound  : ", m["nees_inside"])
+        
 
         fig, axs = plt.subplots(2, 2, figsize=(16, 11))
+        n = len(path_gen.path_history)
+        colors = plt.cm.tab10(np.arange(n) % 10)   # distinct colors, cycles after 10
         for idx, path_ in enumerate(path_gen.path_history):
-            axs[0, 0].plot(path_[:, 0], path_[:, 1], "k-", lw=1.2, label=f"Target path{idx + 1}")
+            axs[0, 0].plot(path_[:, 0], path_[:, 1], color=colors[idx], lw=1.2, label=f"Target path{idx + 1}")
         axs[0, 0].plot(self.true_pose[:, 0], self.true_pose[:, 1], "b-", lw=1.2, label="true path")
-        axs[0, 0].plot(self.est_pose[:, 0], self.est_pose[:, 1], "r-", lw=0.8, alpha=0.7, label="EKF estimate")
+        axs[0, 0].plot(self.est_pose[:, 0], self.est_pose[:, 1], "r-", lw=1.5, alpha=0.7, label="EKF estimate")
         axs[0, 0].set_title("Trajectory", fontweight="bold"); axs[0, 0].legend(loc="upper center", ncol=3, fontsize=8)
         
         axs[0, 1].plot(self.t, 100 * self.e_y_true, "k-", lw=1, label="true $e_y$")

@@ -1,6 +1,12 @@
 """All tunable constants in one place."""
 
-MODEL_PATH = r"Turtlebot3\room_scene_no_obstacle.xml"
+SCENE = "2wall"
+if SCENE == "no_wall":
+    MODEL_PATH = r"Turtlebot3\room_scene_no_obstacle.xml"
+elif SCENE == "wall":
+    MODEL_PATH = r"Turtlebot3\room_scene_wall.xml"
+elif SCENE == "2wall":
+    MODEL_PATH = r"Turtlebot3\room_scene_2walls.xml"
 SIM_DURATION = 600.0  # seconds of SIM time
 
 V = 0.26 #m/s

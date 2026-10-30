@@ -11,7 +11,7 @@ from sensors import Encoders, Lidar, Camera, ArucoMarker
 from estimation_control import DiffDriveOdometry, GroundTruthLogger
 from estimation_control import ErrorModel, LQIController, EKF_Estimator
 from estimation_control import PathGenerator, LocalMap
-
+"""tuned with no walls or obstacle and no bias on the omega (check drive.py)"""
 def main():
     model = mujoco.MjModel.from_xml_path(cfg.MODEL_PATH)
     data = mujoco.MjData(model)
@@ -38,16 +38,18 @@ def main():
     #LQI Settings
     """ Tuned Ra, Qa constant. 
         started with np.array([[1/0.5**2]]).
-        used the room_scene_no_obstacle scene."""
+        used the room_scene_no_obstacle scene.
+        Then tune ekf again.
+        """
     Qa = np.diag([1/0.01**2, 1/np.deg2rad(1)**2, 100.0]) # the larger the controller will try to quickly fix the errors
-    Ra = np.array([[1/0.4**2]])                          # the larger the slower the response (control input becomes more expensive)
+    Ra = np.array([[1/0.42**2]])                          # the larger the slower the response (control input becomes more expensive)
     controller = LQIController(model, error_model.Ad, error_model.Bd, Qa, Ra)
 
     #EKF Settings
     """started  with (1.0*0.1) and np.deg2rad(5.0)
         then used the room_scene_no_obstacle scene 
-        to get the anees as close to 3."""
-    Qd = np.diag([(0.46*0.1)**2, (0.46*0.1)**2, np.deg2rad(4.0)**2]) #The larger, the model assumes the model is bad and rely on sensors more
+        to get the anees as close to 3. then tune lqi."""
+    Qd = np.diag([(0.37*0.1)**2, (0.37*0.1)**2, np.deg2rad(6.0)**2]) #The larger, the model assumes the model is bad and rely on sensors more
     Rn = np.diag([0.3**2 , np.deg2rad(10)**2])                     #The larger, the model assumes the sensor is bad and rely on model more
     estimator = EKF_Estimator(model,Qd,Rn)
 
