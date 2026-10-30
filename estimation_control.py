@@ -94,9 +94,10 @@ class AssortedPathGenerator:
         return float(e_y), float(wrap(theta - th_p)), float(kappa), float(s)
 
 class PathGenerator:
-    def __init__(self, map_path, inflation_radius = 8):
+    def __init__(self, map_path, inflation_radius = 8.0, visualise_replan=False):
         self.raw_map = np.load(map_path)
         self.inflation_radius = inflation_radius
+        self.visualise_replan = visualise_replan
         
         self.X0, self.Y0, self.res = -4.05, -3.05, 0.05
         self.y_bound, self.x_bound = 0, 0
@@ -113,13 +114,13 @@ class PathGenerator:
 
     def g2w(self, col, row):
         """grid (col, row) -> world (x, y) at the cell center"""
-        return (self.X0 + (col + 0.5) * self.res,
-                self.Y0 + (row + 0.5) * self.res)
+        return (round(self.X0 + (col + 0.5) * self.res, 2),
+                round(self.Y0 + (row + 0.5) * self.res, 2))
     
     def load_map(self):
         # Load raw map into python_motion map
         self.y_bound, self.x_bound = self.raw_map.shape
-        self.map_ = Grid(bounds=[[0, self.x_bound], [0, self.y_bound]], strict_collision=True)
+        self.map_ = Grid(bounds=[[0, self.x_bound], [0, self.y_bound]],  strict_collision=True)
         self.map_.fill_boundary_with_obstacles()
         for y, i in enumerate(self.raw_map):
             for x, j in enumerate(i):
@@ -148,7 +149,8 @@ class PathGenerator:
         return n / np.maximum(norms, 1e-12)
     
     def add_local_map(self, local_map):
-        self.load_map()
+        self.load_map() # clear the map
+
         #convert new points to grid coords
         #from here the maps are still numpy arrays and in grid coords
         obstacle_new = []
@@ -192,22 +194,25 @@ class PathGenerator:
         # Convert start and goal position to grid coordinate
         start = self.w2g(start)  
         goal = self.w2g(goal)   
-        # strict_vis = Visualizer2D()
+        if self.visualise_replan:
+            strict_vis = Visualizer2D()
         # Run planner
         if local_map != None:
-            self.add_local_map(np.asarray(local_map))            
-            # strict_vis.plot_grid_map(self.map_)
+            self.add_local_map(np.asarray(local_map)) 
+            if self.visualise_replan:           
+                strict_vis.plot_grid_map(self.map_)
 
         planner = LazyThetaStar(map_=self.map_, start=start, goal=goal)
         path, _ = planner.plan()
 
-        # if local_map != None:
-        #     strict_vis.plot_path(path, style="--", color="C4")
-        #     strict_vis.show()
-        #     strict_vis.close()
+        if local_map != None and self.visualise_replan:
+            strict_vis.plot_path(path, style="--", color="C4")
+            strict_vis.show()
+            strict_vis.close()
 
         path_result = []
         for waypoint in path:
+            #change back to world coords
             path_result.append(self.g2w(waypoint[0], waypoint[1]))
         self.path_history.append(np.asarray(path_result))
         self.path = path_result
@@ -217,6 +222,7 @@ class PathGenerator:
         """
         Claude made this path error function.
         """
+        # print(path)
         x = np.asarray(x, dtype=float)
         path = np.asarray(path, dtype=float)
 
@@ -269,11 +275,12 @@ class PathGenerator:
 class LocalMap:
     def __init__(self):
         self.map = []
-        self.FOV = np.deg2rad(20)
+        self.FOV = np.deg2rad(15)
         self.min_dist = 0.1
         self.DIST_THRESHOLD = 0.8
         self.RESET_DIST = 1.2
         self.obstacle = False
+
     def detect_obstacle(self, points):
         point_in_robot_frame = points + np.array([-0.049, 0, 0.1255])
         ranges = np.hypot(point_in_robot_frame[:, 0], point_in_robot_frame[:, 1])
@@ -288,19 +295,20 @@ class LocalMap:
 
         self.obstacle = self.range < self.DIST_THRESHOLD
 
-
     def update_map(self, points, xh):
         self.map = []
         self.detect_obstacle(points)
         for idx, range_ in enumerate(np.hypot(points[:, 0], points[:, 1])):
             if range_ < 3.0 and not np.isnan(range_):
                 point_in_robot_frame = points[idx] + np.array([-0.049, 0, 0.1255])
-                cos_t = np.cos(xh[2])
-                sin_t = np.sin(xh[2])
+                
                 Lidar_rotation = np.array([[-1.0,0.0, 0.0],
                                            [0.0, -1, 0.0],
                                            [0.0, 0.0, 1.0]
-                                        ])
+                                        ]) # Correct from the rotation in MJCF. In the MJCF its rotated 180 degrees because it was facing backwards.
+                
+                cos_t = np.cos(xh[2])
+                sin_t = np.sin(xh[2])
                 R = np.array([[cos_t, -sin_t, 0.0],
                               [sin_t,  cos_t, 0.0],
                               [  0.0,    0.0, 1.0]
@@ -310,11 +318,11 @@ class LocalMap:
                 self.map.append(point_in_world_frame[:2])
     
 class EKF_Estimator:
-    def __init__(self, model):
+    def __init__(self, model, Qd, Rn):
         self.T = model.opt.timestep
 
-        self.Q_D = np.diag([(0.8*0.1)**2, (0.8*0.1)**2, np.deg2rad(4.0)**2]) #The larger the model assumes the model is bad and rely on sensors more
-        self.R_N = np.diag([0.3**2 , np.deg2rad(10)**2])                     #The larger the model assumes the sensor is bad and rely on model more
+        self.Q_D = Qd #The larger, the model assumes the model is bad and rely on sensors more
+        self.R_N = Rn #The larger, the model assumes the sensor is bad and rely on model more
 
     def f_uni(self, x, dl, dr):
         v = (dl + dr) / (2 * self.T)
@@ -374,13 +382,17 @@ class EKF_Estimator:
         return xh, P, nu, S
     
 class LQIController:
-    def __init__(self, model, Ad, Bd):
+    def __init__(self, model, Ad, Bd, Qa, Ra):
         self.T = model.opt.timestep
         
         self.Ad = Ad
         self.Bd = Bd
 
         self.z = 0.0
+
+        self.Qa = Qa # the larger the controller will try to quickly fix the errors
+        self.Ra = Ra # the larger the slower the response (control input becomes more expensive)
+
         self.calculate_gain()
 
     def reset(self):
@@ -392,9 +404,8 @@ class LQIController:
                     [self.T, 0,   np.ones((1, 1))]])
         Bd_i = np.vstack([self.Bd, np.zeros((1, 1))])
 
-        Qa = np.diag([1/0.01**2, 1/np.deg2rad(1)**2, 100.0]) # the larger the controller will try to quickly fix the errors
-        Ra = np.array([[1/0.5**2]])                          # the larger the slower the response (control input becomes more expensive)
-        self.K, _, Ea = ct.dlqr(Ad_i, Bd_i, Qa, Ra)
+        self.K, _, Ea = ct.dlqr(Ad_i, Bd_i, self.Qa, self.Ra)
+        print("==========LQI STATS============")
         print("closed-loop poles :", np.abs(Ea))
         print("gain: ", self.K)
 
@@ -453,6 +464,8 @@ class ErrorModel:
         self.Ad, self.Bd, self.C = np.array(model_d.A), np.array(model_d.B), C
 
     def check_ctrl_and_obsv_matrix(self):
+        print("================ERROR MODEL STATS=============")
+        print("================Controllability=============")
         Cm = ct.ctrb(self.Ad, self.Bd)
         print("controllability matrix\n", Cm)
         print("rank =", np.linalg.matrix_rank(Cm), " (n = 2)")
@@ -460,6 +473,7 @@ class ErrorModel:
 
         Om = ct.obsv(self.Ad, self.C)
         sv = np.linalg.svd(Om, compute_uv=False)
+        print("================Observeability=============")
         print("rank O = %d (n = 2) singular values: %s" % (np.linalg.matrix_rank(Om), np.round(sv, 3)))
         print("Observable:", np.linalg.matrix_rank(Om) == self.Ad.shape[0])
 
