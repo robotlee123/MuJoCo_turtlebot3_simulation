@@ -1,6 +1,6 @@
 """All tunable constants in one place."""
 
-MODEL_PATH = r"Turtlebot3\room_scene_large.xml"
+MODEL_PATH = r"Turtlebot3\room_scene_no_obstacle.xml"
 SIM_DURATION = 600.0  # seconds of SIM time
 
 V = 0.26 #m/s
