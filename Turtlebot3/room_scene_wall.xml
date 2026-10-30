@@ -149,12 +149,8 @@
     <camera name="corner_cam_nw" pos="-3.6 2.6 2.6"  xyaxes="-0.707 -0.707 0 0.212 -0.212 0.9"/>
     <camera name="top_cam" pos="0 0 2.9" xyaxes="1 0 0 0 1 0" fovy="110"/>
 
-    <body name="visual_cube1" pos="0 0 0.1">
-      <geom type="box" size="0.2 0.2 0.1" rgba="1 0 0 0.15" contype="0" conaffinity="0"/>
-    </body> 
-
-    <body name="visual_cube2" pos="1 0 0.1">
-      <geom type="box" size="0.2 0.2 0.1" rgba="1 0 0 0.15" contype="0" conaffinity="0"/>
+    <body name="visual_cube1" pos="1 -1.0 0.1">
+      <geom type="box" size="0.1 1.0 0.1" rgba="1 0 0 1"/>
     </body> 
 
 
@@ -386,7 +382,7 @@
     <body name="aruco_marker26" pos="-3.398 -2.1 0.1">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco26" contype="0" conaffinity="0"/>
     </body>
-    <body name="aruco_marker27" pos="-3.398 -1.8 0.1">
+    <body name="aruco_marker27" pos="-3.398 -1.8 1.0">
       <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco27" contype="0" conaffinity="0"/>
     </body>
     <body name="aruco_marker28" pos="-3.398 -1.5 0.1">

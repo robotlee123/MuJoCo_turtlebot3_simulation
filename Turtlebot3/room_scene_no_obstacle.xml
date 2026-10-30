@@ -1,0 +1,449 @@
+<mujoco model="large_room_aruco">
+  <include file="turtlebot3_waffle_pi.xml"/>
+  <compiler texturedir="assets/aruco/" />
+  <statistic center="0.3 0 0.4" extent="1"/>
+
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+    <headlight ambient="0.45 0.45 0.45" diffuse="0.5 0.5 0.5" specular="0.1 0.1 0.1"/>
+    <quality shadowsize="4096"/>
+  </visual>
+
+  <asset>
+    <material name="floor_mat"    rgba="0.60 0.45 0.30 1"/>
+    <material name="ceiling_mat"  rgba="0.95 0.95 0.95 0.12"/>
+    <material name="wall_north"   rgba="0.85 0.35 0.35 1"/>
+    <material name="wall_south"   rgba="0.35 0.60 0.85 1"/>
+    <material name="wall_east"    rgba="0.45 0.78 0.45 1"/>
+    <material name="wall_west"    rgba="0.95 0.85 0.40 1"/>
+    <material name="dining_mat"   rgba="0.55 0.30 0.15 1"/>
+    <material name="chair_mat"    rgba="0.25 0.25 0.65 1"/>
+    <material name="chair_red"    rgba="0.75 0.20 0.25 1"/>
+    <material name="desk_mat"     rgba="0.85 0.80 0.65 1"/>
+    <material name="desk_chair"   rgba="0.15 0.15 0.15 1"/>
+    <material name="coffee_mat"   rgba="0.80 0.80 0.80 1"/>
+    <material name="shelf_mat"    rgba="0.90 0.55 0.15 1"/>
+    <material name="cabinet_mat"  rgba="0.60 0.35 0.75 1"/>
+    <material name="wardrobe_mat" rgba="0.20 0.65 0.65 1"/>
+    <material name="counter_mat"  rgba="0.95 0.95 0.55 1"/>
+    <material name="sofa_mat"     rgba="0.30 0.55 0.35 1"/>
+    <material name="sofa_arm"     rgba="0.20 0.40 0.25 1"/>
+    <material name="rug_mat"      rgba="0.70 0.15 0.45 1"/>
+    <material name="book_r" rgba="0.80 0.10 0.10 1"/>
+    <material name="book_g" rgba="0.10 0.60 0.20 1"/>
+    <material name="book_b" rgba="0.10 0.30 0.85 1"/>
+    <material name="book_y" rgba="0.95 0.85 0.10 1"/>
+
+    <!-- ArUco marker textures -->
+    <texture name="aruco0" type="2d" file="marker_0.png"/>
+    <material name="aruco0" texture="aruco0" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco1" type="2d" file="marker_1.png"/>
+    <material name="aruco1" texture="aruco1" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco2" type="2d" file="marker_2.png"/>
+    <material name="aruco2" texture="aruco2" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco3" type="2d" file="marker_3.png"/>
+    <material name="aruco3" texture="aruco3" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco4" type="2d" file="marker_4.png"/>
+    <material name="aruco4" texture="aruco4" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco5" type="2d" file="marker_5.png"/>
+    <material name="aruco5" texture="aruco5" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco6" type="2d" file="marker_6.png"/>
+    <material name="aruco6" texture="aruco6" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco7" type="2d" file="marker_7.png"/>
+    <material name="aruco7" texture="aruco7" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco8" type="2d" file="marker_8.png"/>
+    <material name="aruco8" texture="aruco8" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco9" type="2d" file="marker_9.png"/>
+    <material name="aruco9" texture="aruco9" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco10" type="2d" file="marker_10.png"/>
+    <material name="aruco10" texture="aruco10" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco11" type="2d" file="marker_11.png"/>
+    <material name="aruco11" texture="aruco11" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco12" type="2d" file="marker_12.png"/>
+    <material name="aruco12" texture="aruco12" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco13" type="2d" file="marker_13.png"/>
+    <material name="aruco13" texture="aruco13" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco14" type="2d" file="marker_14.png"/>
+    <material name="aruco14" texture="aruco14" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco15" type="2d" file="marker_15.png"/>
+    <material name="aruco15" texture="aruco15" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco16" type="2d" file="marker_16.png"/>
+    <material name="aruco16" texture="aruco16" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco17" type="2d" file="marker_17.png"/>
+    <material name="aruco17" texture="aruco17" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco18" type="2d" file="marker_18.png"/>
+    <material name="aruco18" texture="aruco18" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco19" type="2d" file="marker_19.png"/>
+    <material name="aruco19" texture="aruco19" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco20" type="2d" file="marker_20.png"/>
+    <material name="aruco20" texture="aruco20" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco21" type="2d" file="marker_21.png"/>
+    <material name="aruco21" texture="aruco21" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco22" type="2d" file="marker_22.png"/>
+    <material name="aruco22" texture="aruco22" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco23" type="2d" file="marker_23.png"/>
+    <material name="aruco23" texture="aruco23" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco24" type="2d" file="marker_24.png"/>
+    <material name="aruco24" texture="aruco24" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco25" type="2d" file="marker_25.png"/>
+    <material name="aruco25" texture="aruco25" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco26" type="2d" file="marker_26.png"/>
+    <material name="aruco26" texture="aruco26" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco27" type="2d" file="marker_27.png"/>
+    <material name="aruco27" texture="aruco27" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco28" type="2d" file="marker_28.png"/>
+    <material name="aruco28" texture="aruco28" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco29" type="2d" file="marker_29.png"/>
+    <material name="aruco29" texture="aruco29" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco30" type="2d" file="marker_30.png"/>
+    <material name="aruco30" texture="aruco30" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco31" type="2d" file="marker_31.png"/>
+    <material name="aruco31" texture="aruco31" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco32" type="2d" file="marker_32.png"/>
+    <material name="aruco32" texture="aruco32" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco33" type="2d" file="marker_33.png"/>
+    <material name="aruco33" texture="aruco33" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco34" type="2d" file="marker_34.png"/>
+    <material name="aruco34" texture="aruco34" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco35" type="2d" file="marker_35.png"/>
+    <material name="aruco35" texture="aruco35" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco36" type="2d" file="marker_36.png"/>
+    <material name="aruco36" texture="aruco36" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco37" type="2d" file="marker_37.png"/>
+    <material name="aruco37" texture="aruco37" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco38" type="2d" file="marker_38.png"/>
+    <material name="aruco38" texture="aruco38" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco39" type="2d" file="marker_39.png"/>
+    <material name="aruco39" texture="aruco39" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco40" type="2d" file="marker_40.png"/>
+    <material name="aruco40" texture="aruco40" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco41" type="2d" file="marker_41.png"/>
+    <material name="aruco41" texture="aruco41" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco42" type="2d" file="marker_42.png"/>
+    <material name="aruco42" texture="aruco42" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco43" type="2d" file="marker_43.png"/>
+    <material name="aruco43" texture="aruco43" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco44" type="2d" file="marker_44.png"/>
+    <material name="aruco44" texture="aruco44" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco45" type="2d" file="marker_45.png"/>
+    <material name="aruco45" texture="aruco45" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco46" type="2d" file="marker_46.png"/>
+    <material name="aruco46" texture="aruco46" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco47" type="2d" file="marker_47.png"/>
+    <material name="aruco47" texture="aruco47" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco48" type="2d" file="marker_48.png"/>
+    <material name="aruco48" texture="aruco48" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+    <texture name="aruco49" type="2d" file="marker_49.png"/>
+    <material name="aruco49" texture="aruco49" texuniform="false" specular="0" shininess="0" reflectance="0"/>
+  </asset>
+
+  <worldbody>
+    <!-- Lights -->
+    <light name="light1" pos="-2 1.5 2.9" dir="0 0 -1" diffuse="0.6 0.6 0.6" castshadow="true"/>
+    <light name="light2" pos="2 1.5 2.9"  dir="0 0 -1" diffuse="0.6 0.6 0.6" castshadow="false"/>
+    <light name="light3" pos="-2 -1.5 2.9" dir="0 0 -1" diffuse="0.6 0.6 0.6" castshadow="false"/>
+    <light name="light4" pos="2 -1.5 2.9"  dir="0 0 -1" diffuse="0.6 0.6 0.6" castshadow="false"/>
+
+    <!-- Cameras (inside the room) -->
+    <camera name="corner_cam_se" pos="3.6 -2.6 2.6"  xyaxes="0.707 0.707 0 -0.212 0.212 0.9"/>
+    <camera name="corner_cam_nw" pos="-3.6 2.6 2.6"  xyaxes="-0.707 -0.707 0 0.212 -0.212 0.9"/>
+    <camera name="top_cam" pos="0 0 2.9" xyaxes="1 0 0 0 1 0" fovy="110"/>
+    ===== ROOM: 8 m x 6 m x 3 m, closed =====
+    <geom name="floor"   type="box" pos="0 0 -0.025"   size="4.05 3.05 0.025" material="floor_mat"/>
+    <geom name="ceiling" type="box" pos="0 0 3.025"    size="4.05 3.05 0.025" material="ceiling_mat" contype="0" conaffinity="0"/>
+    <geom name="wall_N"  type="box" pos="0 3.025 1.5"  size="4.05 0.025 1.5" material="wall_north"/>
+    <geom name="wall_S"  type="box" pos="0 -3.025 1.5" size="4.05 0.025 1.5" material="wall_south"/>
+    <geom name="wall_E"  type="box" pos="4.025 0 1.5"  size="0.025 3 1.5"    material="wall_east"/>
+    <geom name="wall_W"  type="box" pos="-4.025 0 1.5" size="0.025 3 1.5"    material="wall_west"/>
+
+    <!-- ===== Dining area ===== -->
+    <body name="dining_table" pos="-2 1.5 0">
+      <geom name="dining_table_top" type="box" pos="0 0 0.725" size="0.9 0.45 0.025" material="dining_mat"/>
+      <geom name="dining_table_leg1" type="box" pos="0.85 0.4 0.35" size="0.025 0.025 0.35" material="dining_mat"/>
+      <geom name="dining_table_leg2" type="box" pos="0.85 -0.4 0.35" size="0.025 0.025 0.35" material="dining_mat"/>
+      <geom name="dining_table_leg3" type="box" pos="-0.85 0.4 0.35" size="0.025 0.025 0.35" material="dining_mat"/>
+      <geom name="dining_table_leg4" type="box" pos="-0.85 -0.4 0.35" size="0.025 0.025 0.35" material="dining_mat"/>
+    </body>
+    <body name="dchair1" pos="-2.4 0.7 0">
+      <geom name="dchair1_seat" type="box" pos="0 0 0.42" size="0.2 0.2 0.02" material="chair_mat"/>
+      <geom name="dchair1_back" type="box" pos="0 -0.18 0.65" size="0.2 0.02 0.23" material="chair_mat"/>
+      <geom name="dchair1_leg1" type="box" pos="0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_mat"/>
+      <geom name="dchair1_leg2" type="box" pos="0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_mat"/>
+      <geom name="dchair1_leg3" type="box" pos="-0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_mat"/>
+      <geom name="dchair1_leg4" type="box" pos="-0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_mat"/>
+    </body>
+    <body name="dchair2" pos="-1.6 0.7 0">
+      <geom name="dchair2_seat" type="box" pos="0 0 0.42" size="0.2 0.2 0.02" material="chair_mat"/>
+      <geom name="dchair2_back" type="box" pos="0 -0.18 0.65" size="0.2 0.02 0.23" material="chair_mat"/>
+      <geom name="dchair2_leg1" type="box" pos="0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_mat"/>
+      <geom name="dchair2_leg2" type="box" pos="0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_mat"/>
+      <geom name="dchair2_leg3" type="box" pos="-0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_mat"/>
+      <geom name="dchair2_leg4" type="box" pos="-0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_mat"/>
+    </body>
+    <body name="dchair3" pos="-2.4 2.3 0">
+      <geom name="dchair3_seat" type="box" pos="0 0 0.42" size="0.2 0.2 0.02" material="chair_red"/>
+      <geom name="dchair3_back" type="box" pos="0 0.18 0.65" size="0.2 0.02 0.23" material="chair_red"/>
+      <geom name="dchair3_leg1" type="box" pos="0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="dchair3_leg2" type="box" pos="0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="dchair3_leg3" type="box" pos="-0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="dchair3_leg4" type="box" pos="-0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+    </body>
+    <body name="dchair4" pos="-1.6 2.3 0">
+      <geom name="dchair4_seat" type="box" pos="0 0 0.42" size="0.2 0.2 0.02" material="chair_red"/>
+      <geom name="dchair4_back" type="box" pos="0 0.18 0.65" size="0.2 0.02 0.23" material="chair_red"/>
+      <geom name="dchair4_leg1" type="box" pos="0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="dchair4_leg2" type="box" pos="0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="dchair4_leg3" type="box" pos="-0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="dchair4_leg4" type="box" pos="-0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+    </body>
+    <!-- ===== Desk area (north-east) ===== -->
+    <body name="desk" pos="2.5 2.3 0">
+      <geom name="desk_top" type="box" pos="0 0 0.725" size="0.7 0.3 0.025" material="desk_mat"/>
+      <geom name="desk_leg1" type="box" pos="0.65 0.25 0.35" size="0.025 0.025 0.35" material="desk_mat"/>
+      <geom name="desk_leg2" type="box" pos="0.65 -0.25 0.35" size="0.025 0.025 0.35" material="desk_mat"/>
+      <geom name="desk_leg3" type="box" pos="-0.65 0.25 0.35" size="0.025 0.025 0.35" material="desk_mat"/>
+      <geom name="desk_leg4" type="box" pos="-0.65 -0.25 0.35" size="0.025 0.025 0.35" material="desk_mat"/>
+    </body>
+    <body name="desk_chair" pos="2.5 1.7 0">
+      <geom name="desk_chair_seat" type="box" pos="0 0 0.42" size="0.2 0.2 0.02" material="desk_chair"/>
+      <geom name="desk_chair_back" type="box" pos="0 -0.18 0.65" size="0.2 0.02 0.23" material="desk_chair"/>
+      <geom name="desk_chair_leg1" type="box" pos="0.17 0.17 0.2" size="0.02 0.02 0.2" material="desk_chair"/>
+      <geom name="desk_chair_leg2" type="box" pos="0.17 -0.17 0.2" size="0.02 0.02 0.2" material="desk_chair"/>
+      <geom name="desk_chair_leg3" type="box" pos="-0.17 0.17 0.2" size="0.02 0.02 0.2" material="desk_chair"/>
+      <geom name="desk_chair_leg4" type="box" pos="-0.17 -0.17 0.2" size="0.02 0.02 0.2" material="desk_chair"/>
+    </body>
+    <body name="desk_drawer" pos="3.35 2.3 0">
+      <geom name="desk_drawer_geom" type="box" pos="0 0 0.3" size="0.15 0.3 0.3" material="desk_mat"/>
+    </body>
+    <!-- ===== Living area ===== -->
+    <body name="coffee_table" pos="0 -1.5 0">
+      <geom name="coffee_table_top" type="box" pos="0 0 0.43" size="0.5 0.35 0.02" material="coffee_mat"/>
+      <geom name="coffee_table_leg1" type="box" pos="0.45 0.3 0.205" size="0.025 0.025 0.205" material="coffee_mat"/>
+      <geom name="coffee_table_leg2" type="box" pos="0.45 -0.3 0.205" size="0.025 0.025 0.205" material="coffee_mat"/>
+      <geom name="coffee_table_leg3" type="box" pos="-0.45 0.3 0.205" size="0.025 0.025 0.205" material="coffee_mat"/>
+      <geom name="coffee_table_leg4" type="box" pos="-0.45 -0.3 0.205" size="0.025 0.025 0.205" material="coffee_mat"/>
+    </body>
+    <body name="sofa" pos="0 -2.4 0">
+      <geom name="sofa_base" type="box" pos="0 0 0.2"  size="0.9 0.4 0.2"  material="sofa_mat"/>
+      <geom name="sofa_back" type="box" pos="0 -0.32 0.6" size="0.9 0.08 0.2" material="sofa_mat"/>
+      <geom name="sofa_armL" type="box" pos="-0.98 0 0.275" size="0.08 0.4 0.275" material="sofa_arm"/>
+      <geom name="sofa_armR" type="box" pos="0.98 0 0.275"  size="0.08 0.4 0.275" material="sofa_arm"/>
+    </body>
+    <body name="armchair1" pos="-1.9 -1.5 0">
+      <geom name="armchair1_seat" type="box" pos="0 0 0.42" size="0.2 0.2 0.02" material="chair_red"/>
+      <geom name="armchair1_back" type="box" pos="-0.18 0 0.65" size="0.02 0.2 0.23" material="chair_red"/>
+      <geom name="armchair1_leg1" type="box" pos="0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="armchair1_leg2" type="box" pos="0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="armchair1_leg3" type="box" pos="-0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="armchair1_leg4" type="box" pos="-0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+    </body>
+    <body name="armchair2" pos="1.9 -1.5 0">
+      <geom name="armchair2_seat" type="box" pos="0 0 0.42" size="0.2 0.2 0.02" material="chair_red"/>
+      <geom name="armchair2_back" type="box" pos="0.18 0 0.65" size="0.02 0.2 0.23" material="chair_red"/>
+      <geom name="armchair2_leg1" type="box" pos="0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="armchair2_leg2" type="box" pos="0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="armchair2_leg3" type="box" pos="-0.17 0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+      <geom name="armchair2_leg4" type="box" pos="-0.17 -0.17 0.2" size="0.02 0.02 0.2" material="chair_red"/>
+    </body>
+    <!-- ===== Storage ===== -->
+    <body name="shelf1" pos="3.8 -1.2 0">
+      <geom name="shelf1_sideL" type="box" pos="0 0.5 1" size="0.15 0.02 1" material="shelf_mat"/>
+      <geom name="shelf1_sideR" type="box" pos="0 -0.5 1" size="0.15 0.02 1" material="shelf_mat"/>
+      <geom name="shelf1_back" type="box" pos="0.14 0 1" size="0.01 0.5 1" material="shelf_mat"/>
+      <geom name="shelf1_board0" type="box" pos="0 0 0.02" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf1_board1" type="box" pos="0 0 0.5" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf1_board2" type="box" pos="0 0 1" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf1_board3" type="box" pos="0 0 1.5" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf1_board4" type="box" pos="0 0 1.98" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf1_book1" type="box" pos="0 -0.32 0.595" size="0.1 0.045 0.08" material="book_g"/>
+      <geom name="shelf1_book2" type="box" pos="0 -0.2 0.585" size="0.1 0.045 0.07" material="book_y"/>
+      <geom name="shelf1_book3" type="box" pos="0 -0.08 0.575" size="0.1 0.045 0.06" material="book_g"/>
+      <geom name="shelf1_book4" type="box" pos="0 -0.32 1.065" size="0.1 0.045 0.05" material="book_r"/>
+      <geom name="shelf1_book5" type="box" pos="0 -0.2 1.095" size="0.1 0.045 0.08" material="book_b"/>
+      <geom name="shelf1_book6" type="box" pos="0 -0.08 1.085" size="0.1 0.045 0.07" material="book_r"/>
+      <geom name="shelf1_book7" type="box" pos="0 -0.32 1.575" size="0.1 0.045 0.06" material="book_y"/>
+      <geom name="shelf1_book8" type="box" pos="0 -0.2 1.565" size="0.1 0.045 0.05" material="book_g"/>
+      <geom name="shelf1_book9" type="box" pos="0 -0.08 1.595" size="0.1 0.045 0.08" material="book_y"/>
+    </body>
+    <body name="shelf2" pos="3.8 -0.1 0">
+      <geom name="shelf2_sideL" type="box" pos="0 0.5 1" size="0.15 0.02 1" material="shelf_mat"/>
+      <geom name="shelf2_sideR" type="box" pos="0 -0.5 1" size="0.15 0.02 1" material="shelf_mat"/>
+      <geom name="shelf2_back" type="box" pos="0.14 0 1" size="0.01 0.5 1" material="shelf_mat"/>
+      <geom name="shelf2_board0" type="box" pos="0 0 0.02" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf2_board1" type="box" pos="0 0 0.5" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf2_board2" type="box" pos="0 0 1" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf2_board3" type="box" pos="0 0 1.5" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf2_board4" type="box" pos="0 0 1.98" size="0.15 0.48 0.015" material="shelf_mat"/>
+      <geom name="shelf2_book1" type="box" pos="0 -0.32 0.595" size="0.1 0.045 0.08" material="book_y"/>
+      <geom name="shelf2_book2" type="box" pos="0 -0.2 0.585" size="0.1 0.045 0.07" material="book_g"/>
+      <geom name="shelf2_book3" type="box" pos="0 -0.08 0.575" size="0.1 0.045 0.06" material="book_y"/>
+      <geom name="shelf2_book4" type="box" pos="0 -0.32 1.065" size="0.1 0.045 0.05" material="book_b"/>
+      <geom name="shelf2_book5" type="box" pos="0 -0.2 1.095" size="0.1 0.045 0.08" material="book_r"/>
+      <geom name="shelf2_book6" type="box" pos="0 -0.08 1.085" size="0.1 0.045 0.07" material="book_b"/>
+      <geom name="shelf2_book7" type="box" pos="0 -0.32 1.575" size="0.1 0.045 0.06" material="book_g"/>
+      <geom name="shelf2_book8" type="box" pos="0 -0.2 1.565" size="0.1 0.045 0.05" material="book_y"/>
+      <geom name="shelf2_book9" type="box" pos="0 -0.08 1.595" size="0.1 0.045 0.08" material="book_g"/>
+    </body>
+    <body name="wardrobe" pos="-3.7 -1.8 0">
+      <geom name="wardrobe_geom" type="box" pos="0 0 1" size="0.3 0.6 1" material="wardrobe_mat"/>
+    </body>
+    <body name="cabinet" pos="0 2.75 0">
+      <geom name="cabinet_geom" type="box" pos="0 0 0.45" size="0.6 0.2 0.45" material="cabinet_mat"/>
+    </body>
+    <body name="counter" pos="2.6 -2.7 0">
+      <geom name="counter_geom" type="box" pos="0 0 0.45" size="1 0.3 0.45" material="counter_mat"/>
+    </body>
+
+    <!-- ===== ArUco markers (ids 0-49), 20 cm, bottom edge on the floor: walls + objects ===== -->
+    <body name="aruco_marker0" pos="-3.6 2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco0" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker1" pos="-2.9 2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco1" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker2" pos="-2.2 2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco2" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker3" pos="-1.5 2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco3" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker4" pos="1 2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco4" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker5" pos="1.7 2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco5" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker6" pos="2.4 2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco6" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker7" pos="3.7 2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco7" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker8" pos="-3.6 -2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco8" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker9" pos="-3 -2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco9" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker10" pos="-2.4 -2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco10" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker11" pos="-1.8 -2.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco11" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker12" pos="-1.2 -2.998 1.2">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco12" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker13" pos="0 -2.998 1.2">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco13" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker14" pos="3.998 -2.1 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 -1 0 0 0 1" material="aruco14" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker15" pos="3.998 0.8 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 -1 0 0 0 1" material="aruco15" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker16" pos="3.998 1.3 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 -1 0 0 0 1" material="aruco16" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker17" pos="3.998 1.8 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 -1 0 0 0 1" material="aruco17" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker18" pos="3.998 2.8 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 -1 0 0 0 1" material="aruco18" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker19" pos="-2.4 -2.998 1.0">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco19" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker20" pos="-3.998 -0.6 1.0">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco20" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker21" pos="-3.998 0 1.0">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco21" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker22" pos="-3.998 0.6 1.0">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco22" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker23" pos="-3.998 1.2 1.0">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco23" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker24" pos="-3.998 1.8 1.0">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco24" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker25" pos="-3.998 2.4 1.0">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco25" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker26" pos="-3.398 -2.1 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco26" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker27" pos="-3.398 -1.8 1.0">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco27" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker28" pos="-3.398 -1.5 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco28" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker29" pos="-3.998 -0.6 0.5">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco29" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker30" pos="-3.7 -2.402 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco30" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker31" pos="-0.3 2.548 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco31" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker32" pos="0.3 2.548 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco32" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker33" pos="0.602 2.75 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco33" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker34" pos="-0.602 2.75 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 -1 0 0 0 1" material="aruco34" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker35" pos="1.9 -2.398 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco35" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker36" pos="2.6 -2.398 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco36" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker37" pos="3.3 -2.398 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco37" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker38" pos="1.598 -2.7 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 -1 0 0 0 1" material="aruco38" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker39" pos="3.602 -2.7 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco39" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker40" pos="-0.5 -1.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco40" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker41" pos="0 -1.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco41" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker42" pos="0.5 -1.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco42" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker43" pos="-1.062 -2.4 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 -1 0 0 0 1" material="aruco43" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker44" pos="1.062 -2.4 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco44" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker45" pos="3.8 -1.722 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco45" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker46" pos="3.8 0.422 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco46" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker47" pos="3.35 1.998 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="1 0 -0 0 0 1" material="aruco47" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker48" pos="3.502 2.3 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="0 1 0 0 0 1" material="aruco48" contype="0" conaffinity="0"/>
+    </body>
+    <body name="aruco_marker49" pos="3.35 2.602 0.1">
+      <geom type="plane" size="0.1 0.1 0.001" xyaxes="-1 0 0 0 0 1" material="aruco49" contype="0" conaffinity="0"/>
+    </body>
+  </worldbody>
+</mujoco>
