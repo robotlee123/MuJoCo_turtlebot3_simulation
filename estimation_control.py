@@ -372,7 +372,7 @@ class EKF_Estimator:
         return xh_pred, P_pred
     
     def update(self, xh_pred, P_pred, y, marker):
-        y_hat = self.h_aruco(xh_pred, marker)            # nonlinear h gives the expected measurement
+        y_hat = self.h_aruco(xh_pred, marker)            # what the range should be
         H = self.H_aruco(xh_pred, marker)
         S = H @ P_pred @ H.T + self.R_N          # innovation covariance
         K = P_pred @ H.T @ np.linalg.inv(S)      # Kalman gain
@@ -581,6 +581,5 @@ class GroundTruthLogger:
         axs[1, 1].set_xlabel("time [s]"); axs[1, 1].set_ylabel("[cm]"); axs[1, 1].set_ylim(bottom=0)
         axs[1, 1].set_title(f"Position estimation error (RMSE {100*m['pos_rmse']:.1f} cm)", fontweight="bold")
         axs[1, 1].legend(); axs[1, 1].grid(True, ls="--", alpha=0.5)
-
-        plt.show()
+        plt.savefig('performance_metrics.png')
 
