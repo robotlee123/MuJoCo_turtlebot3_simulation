@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Sample portfolio for 41118 AI in robotics class at UTS.">
+  <meta name="keywords" content="41118">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>41014 42043 TurtleBot3 simulation</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.png">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">41118 Portfolio sample</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://github.com/robotlee123">Edmond Lee</a><sup>1</sup>,
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>University Technology Sydney</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="#video"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/robotlee123/MuJoCo_turtlebot3_simulation"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+              <!-- Dataset Link. -->
+              <!-- <span class="link-block">
+                <a href="https://github.com/rFalque/41118_project-sample/tree/main/data_sample"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Data</span>
+                </a>
+              </span> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img src="./static/images/diagrams/components.png"
+            class="teaser-image"
+            alt="Teaser."/>
+      <h2 class="subtitle has-text-centered">
+        <span class="dnerf">The robot fuses camera and wheel encoders using EKF to estimate it's state. The Lazy theta star planner and a map is used to generate a path for the robot. LQI is used to track this path by minimisng the crosstrack and heading error. LiDAR is used to detect if there is an obstacle infront of the robot, it will trigger a replan when it detects an obstacle.</span>
+
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <h2 class="title is-3">Project pictures</h2>
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item">
+          <img src="./static/images/scene_pictures/start_and_goal.png"
+            class="teaser-image"
+            alt="Teaser."/>
+        </div>
+        <div class="item item-chair-tp">
+          <img src="./static/images/scene_pictures/start_and_goal_obstacle.png"
+            class="teaser-image"
+            alt="Teaser."/>
+        </div>
+        <div class="item item-fullbody">
+          <img src="./static/images/scene_pictures/scene_overview.png"
+            class="teaser-image"
+            alt="Teaser."/>
+        </div>
+        <div class="item item-shiba">
+          <img src="./static/images/scene_pictures/scene_overview2.png"
+            class="teaser-image"
+            alt="Teaser."/>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            The robot fuses wheel encoders with camera measurements to estimate the robot's state. The camera measures range and bearing using ArUco markers placed around the room. The base scene and map file is generated by claude. Then obstacles were added by me. The lazy theta star planner is used to generate a path, it was chosen due to its speed, and that it generated straight line paths. Using the predicted state and the generated path, the crosstrack error and heading error is calculated. The LQI controller take the errors as an input in order to track the path, by outputting angular velocity to steer (velocity is constant = 0.26 m/s). If there is an obstacle infront of the robot the LiDAR detects it and if it is closer than a threshold it will trigger a replan. During a replan the LiDAR data is converted to a local map than a point to plane ICP is applied to align the local map to the map that was previously generated. These two maps are then combined and the used for path generation.
+          </p>
+          <p>
+            The robot was tuned in steps. First the EKF followed by the LQI is tuned in the scene without obstacles. Then the EKF and LQI is retuned in the scene with obstacle and a disturbance (the left wheel is 1 rad/s slower than commanded) is applied to the robot.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <!-- Paper video. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-full-width">
+        <h2 id="video" class="title is-3">Demonstration video</h2>
+        <!-- 
+        <p>
+          As a youtube link:
+        </p>
+        <div class="publication-video">
+          <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
+                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+        -->
+        <div class="content has-text-centered">
+          <video id="replay-video"
+                  controls
+                  preload
+                  playsinline
+                  width="100%">
+            <source src="./static/videos/portfolio_instructions.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+    <!--/ Paper video. -->
+    
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+
+    <div class="columns is-centered">
+
+      <!-- Visual Effects. -->
+      <div class="column">
+        <div class="content">
+          <h2 class="title is-3">performance metrics</h2>
+          <p>
+            Scene with unmapped obstacle and distrubance applied.
+          </p>
+
+          <img src="./static/images/results/performance_metrics.png"
+            class="teaser-image"
+            alt="Teaser."/>
+        </div>
+      </div>
+      <!--/ Visual Effects. -->
+    </div>
+    <!--/ Matting. -->
+
+
+
+
+    <!-- Concurrent Work. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Results discussion and reflection</h2>
+
+        <div class="content has-text-justified">
+          <p>
+            The Plots shows the performance metric of the robot. In the trajectory plot it is shows that the robot replanned 2 times during the simulation. The first path would have collided with the obstacle and the second triggered during a difficult state estimation period causing the robot to navigate towards the wall instead of away. Around (1,1) the state estimation breaksdown abit because EXPLAIN HERE DUMMY. The crosstrack plot tells us that there is a steady state offset of +8.1cm and on average its (+/-)12.1 cm away from the path. NEES shows that the EKF is not overconfident and not underconfident about its estimation, it reaches the lowest estimation error possible. The position estimation error plot show that the position error escaped the 2 sigma bound, during this period the estimate is overconfident.
+          </p>
+          <p>
+            This robot is far from perfect, it struggles to estimate it state when the markers are covered or when turning. The simulation does not introduce the randomness of the real world, when the same variables is run multiple time the same result will be obtained. Thus more disturbance such as friction, or lossy motors should be added before applying it to a real robot. To fix the state estimate problem the LiDAR odometery data could also be fused to minimize the error. The camera used to detect the markers does not have distortion, this does not reflect real world cameras. If the robot is faced with a dynamic obstacle it will most likely fail, a more robust obstacle detection method such as turning the LiDAR into local costmaps and running a local planner with that costmap could be used.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Concurrent Work. -->
+
+  </div>
+</section>
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{park2021nerfies,
+  author    = {Park, Keunhong and Sinha, Utkarsh and Barron, Jonathan T. and Bouaziz, Sofien and Goldman, Dan B and Seitz, Steven M. and Martin-Brualla, Ricardo},
+  title     = {Nerfies: Deformable Neural Radiance Fields},
+  journal   = {ICCV},
+  year      = {2021},
+}</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link"
+         href="./static/videos/nerfies_paper.pdf">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/keunhong" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            This means you are free to borrow the <a
+              href="https://github.com/nerfies/nerfies.github.io">source code</a> of the  website,
+            we just ask that you link back to this page in the footer.
+            Please remember to remove the analytics code included in the header of the website which
+            you do not want on your website.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
