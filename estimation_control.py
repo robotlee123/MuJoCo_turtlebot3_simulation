@@ -221,6 +221,8 @@ class PathGenerator:
     def compute_path_errors(x, path):
         """
         Claude made this path error function.
+        this is why i wanted a planner that plans in straight line. Because the calculations are specific to line.
+        This is needed to find the signed crosstrack error. the sign indicates whether its to the left or right of the line.
         """
         # print(path)
         x = np.asarray(x, dtype=float)
@@ -235,7 +237,7 @@ class PathGenerator:
         V = B - A
 
         # Ignore zero-length segments
-        length_sq = np.sum(V**2, axis=1)
+        length_sq = np.sum(V**2, axis=1) #find length
         valid = length_sq > 1e-12 # its valid only if its not zero
 
         if not np.any(valid):
@@ -250,11 +252,11 @@ class PathGenerator:
 
         # Squared distances to closest points
         W = R - Q
-        dist_sq = np.sum(W**2, axis=1)
-        dist_sq[~valid] = np.inf
+        dist_sq = np.sum(W**2, axis=1) # same as previous now its point to point
+        dist_sq[~valid] = np.inf # this sets invalid segments as infinite for the next step
 
         # Select closest segment
-        idx = np.argmin(dist_sq)
+        idx = np.argmin(dist_sq) # find the index of the shortest distance to the closes point
 
         v = V[idx]
         w = W[idx]

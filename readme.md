@@ -1,14 +1,35 @@
-Claude refactored the code from the testing branch to submodules.
-I pasted the main.py from testing branch asked it to create submodules.
+# 41014 42043 TurtleBot3 simulation
 
-Tuning steps:
+## Explanation
+Simulation of turtlebot3 in MuJoCo simulator. The robot must navigate a room with obstacles using the LiDAR and visually dock to the ArUco-marked goal.
 
-Environement: no distubance and no obstacles
-1.    tune ekf (get anees as close to 3 and nees inside more than 90)
-2.    tune LQI (minimise rms and mean true crosstrack)
-3.    re-tune ekf
-4.    Change environment
+## Environment
+Tested on:
+Windows 11
+python 3.12.10
+Nvdia GPU 
 
-Environemnt: add the disturbance (-1.0 rads/s in left wheel) and 2 walls
-1.    tune LQI (primariily changing the integrator gain)
-2.    tune EKF
+## Group information
+Group number: Project 31
+Group composition: Edmond Lee (26300792)
+
+## Install info
+Define here the dependencies for your project
+```bash
+pip install -r requirements.txt
+```
+
+## Run commands
+To run the simulation use:
+
+cd to the MuJoCo_turtlebot3_simulation directory
+```bash
+cd MuJoCo_turtlebot3_simulation
+```
+Run the main.py
+```bash
+python main.py
+```
+The mujoco viewer will appear with the simulated world.
+
+To see the camera feed from the robot change the 'draw' variable to true in main.py
