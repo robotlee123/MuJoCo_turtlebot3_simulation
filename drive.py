@@ -36,7 +36,7 @@ def ddr_ik(v, omega, max_w, r=cfg.WHEEL_RADIUS, l=cfg.WHEEL_BASE):
     wl = (2 * v - l * omega) / (2 * r)
     wr = (2 * v + l * omega) / (2 * r)
     s = max(1.0, abs(wl) / max_w, abs(wr) / max_w)
-    return wl / s, wr / s
+    return wl / s - 1.0, wr / s
 
 
 class Drive:
