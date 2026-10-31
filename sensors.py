@@ -6,7 +6,7 @@ import numpy as np
 from mujoco_lidar import MjLidarWrapper, scan_gen  # external lidar library
 
 import config as cfg
-from drive import quantize_rads
+from drive import quantize_rads, wrap
 
 
 class Encoders:
@@ -210,7 +210,7 @@ class Camera:
                 ranges_array[marker_ids[i]] = est_range
                 bearing_array[marker_ids[i]] = est_bearing
 
-        return frame, ranges_array, bearing_array
+        return frame, ranges_array, wrap(bearing_array)
 
     @staticmethod
     def show(rgb, title="MuJoCo Camera Feed"):

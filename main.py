@@ -26,7 +26,7 @@ def main():
     logger = GroundTruthLogger(data)
 
     #Draw Camera
-    draw = True
+    draw = False
     
     #Generate initial plan from room map
     path_gen = PathGenerator("room_map.npy", 8.0, visualise_replan=False)
