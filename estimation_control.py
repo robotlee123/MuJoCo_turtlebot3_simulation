@@ -581,5 +581,5 @@ class GroundTruthLogger:
         axs[1, 1].set_xlabel("time [s]"); axs[1, 1].set_ylabel("[cm]"); axs[1, 1].set_ylim(bottom=0)
         axs[1, 1].set_title(f"Position estimation error (RMSE {100*m['pos_rmse']:.1f} cm)", fontweight="bold")
         axs[1, 1].legend(); axs[1, 1].grid(True, ls="--", alpha=0.5)
-        plt.savefig('performance_metrics.png')
+        plt.savefig('performance_metrics.png' , dpi=300, bbox_inches="tight")
 
