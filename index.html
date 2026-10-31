@@ -152,22 +152,13 @@
     <div class="columns is-centered has-text-centered">
       <div class="column is-full-width">
         <h2 id="video" class="title is-3">Demonstration video</h2>
-        <!-- 
-        <p>
-          As a youtube link:
-        </p>
-        <div class="publication-video">
-          <iframe src="https://www.youtube.com/embed/MrKrnHhk8IA?rel=0&amp;showinfo=0"
-                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-        -->
         <div class="content has-text-centered">
           <video id="replay-video"
                   controls
                   preload
                   playsinline
                   width="100%">
-            <source src="./static/videos/portfolio_instructions.mp4"
+            <source src="./static/videos/demo.mp4"
                     type="video/mp4">
           </video>
         </div>
@@ -211,7 +202,7 @@
 
         <div class="content has-text-justified">
           <p>
-            The Plots shows the performance metric of the robot. In the trajectory plot it is shows that the robot replanned 2 times during the simulation. The first path would have collided with the obstacle and the second triggered during a difficult state estimation period causing the robot to navigate towards the wall instead of away. Around (1,1) the state estimation breaksdown abit because EXPLAIN HERE DUMMY. The crosstrack plot tells us that there is a steady state offset of +8.1cm and on average its (+/-)12.1 cm away from the path. NEES shows that the EKF is not overconfident and not underconfident about its estimation, it reaches the lowest estimation error possible. The position estimation error plot show that the position error escaped the 2 sigma bound, during this period the estimate is overconfident.
+            The Plots shows the performance metric of the robot. In the trajectory plot it is shows that the robot replanned 2 times during the simulation. The first path would have collided with the obstacle and the second triggered during a difficult state estimation period causing the robot to navigate towards the wall instead of away. Around (1,1) the state estimation breaksdown abit because there is only 4 markers visible and one of them is unstable. The crosstrack plot tells us that there is a steady state offset of +8.1cm and on average its (+/-)12.1 cm away from the path. NEES shows that the EKF is not overconfident and not underconfident about its estimation, it reaches the lowest estimation error possible. The position estimation error plot show that the position error escaped the 2 sigma bound, during this period the estimate is overconfident.
           </p>
           <p>
             This robot is far from perfect, it struggles to estimate it state when the markers are covered or when turning. The simulation does not introduce the randomness of the real world, when the same variables is run multiple time the same result will be obtained. Thus more disturbance such as friction, or lossy motors should be added before applying it to a real robot. To fix the state estimate problem the LiDAR odometery data could also be fused to minimize the error. The camera used to detect the markers does not have distortion, this does not reflect real world cameras. If the robot is faced with a dynamic obstacle it will most likely fail, a more robust obstacle detection method such as turning the LiDAR into local costmaps and running a local planner with that costmap could be used.
