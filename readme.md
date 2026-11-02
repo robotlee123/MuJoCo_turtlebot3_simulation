@@ -34,6 +34,7 @@ The mujoco viewer will appear with the simulated world.
 
 To see the camera feed from the robot change the 'draw' variable to true in main.py
 
+To use other scene change the SCENE variable in config.py
 ## AI Decleration
 claude was used to generate the scene and the map.npy. The obstacles was added manually.
 
